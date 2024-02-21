@@ -20,7 +20,7 @@ const int MONTH_DAYS[12] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 int main ()
 {
     /*
-    MENU -> 
+    MENU -> 2
         [0] - show events ->
             [0] - year
             [1] - year & month
@@ -32,7 +32,8 @@ int main ()
             return to MAIN
 
         [2] - change schedule
-            [-1] - New schedule
+            [+] - New schedule
+            [-] - Delete schedule
             [0...X] - Select schedule
 
         [3] - stop program
@@ -98,8 +99,9 @@ int main ()
                 printf("\nSelect an option ->\n");
                     printf("\t[0] - Show events\n");
                     printf("\t[1] - Add event\n");
-                    printf("\t[2] - Change schedule\n");
-                    printf("\t[3] - End program\n");
+                    printf("\t[2] - Delete event\n");
+                    printf("\t[3] - Change schedule\n");
+                    printf("\t[4] - End program\n");
                 scanf("%d", &user_option_end_prog_menu);
 
             } while ((user_option_end_prog_menu < 0) || (user_option_end_prog_menu > 3));
@@ -132,7 +134,7 @@ int main ()
                     
                     if (noramlized_user_option_show_events_menu == -2)
                     {
-                        show_events_by(event_list, events_len, -1, -1, -1);
+                        show_events_by(event_list, -1, -1, -1);
                     }
                     else if (noramlized_user_option_show_events_menu == 0) // year
                     {
@@ -144,7 +146,7 @@ int main ()
                         // select the year
                         printf("Intro the year of the events to show: "); scanf(" %d", &year);
                         // function -> show events by year
-                        show_events_by(event_list, events_len, year, -1, -1);
+                        show_events_by(event_list, year, -1, -1);
 
                     } else if (noramlized_user_option_show_events_menu == 1) // year & month
                     {
@@ -156,7 +158,7 @@ int main ()
                         // select the year
                         printf("Intro the year & month of the events to show MM/YYYY: "); scanf(" %d/%d", &month, &year);
                         // function -> show events by year and month
-                        show_events_by(event_list, events_len, year, month, -1);
+                        show_events_by(event_list, year, month, -1);
 
                     } else if (noramlized_user_option_show_events_menu == 2) // year & month & day
                     {
@@ -168,7 +170,7 @@ int main ()
                         // select the year
                         printf("Intro the year & month of the events to show DD/MM/YYYY: "); scanf(" %d/%d/%d", &day, &month, &year);
                         // function -> show events by year and month and day
-                        show_events_by(event_list, events_len, year, month, day);
+                        show_events_by(event_list, year, month, day);
                     }
 
                 } else
@@ -206,18 +208,21 @@ int main ()
 
                 events_len++;
 
-            } else if (user_option_end_prog_menu == 2) // change schedule
+            } else if (user_option_end_prog_menu == 2) // delete event
+            {
+
+            } else if (user_option_end_prog_menu == 3) // change schedule
             {
                 char save_schedule_path[MAX_PATH_LEN];
                 sprintf(save_schedule_path, "%s%s", SCHEDULES_PATH, available_schedules[noramlized_user_option]);
-                event_list_to_file(save_schedule_path, event_list, events_len);
+                event_list_to_file(save_schedule_path, event_list);
                 end_actual_schedule = true;
 
-            } else if (user_option_end_prog_menu == 3) // end program
+            } else if (user_option_end_prog_menu == 4) // end program
             {
                 char save_schedule_path[MAX_PATH_LEN];
                 sprintf(save_schedule_path, "%s%s", SCHEDULES_PATH, available_schedules[noramlized_user_option]);
-                event_list_to_file(save_schedule_path, event_list, events_len);
+                event_list_to_file(save_schedule_path, event_list);
                 end_actual_schedule = true;
                 end_program = true;
             }

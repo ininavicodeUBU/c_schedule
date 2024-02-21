@@ -60,6 +60,9 @@ typedef char (*get_prompt_out_t)[MAX_SCHEDULES][MAX_PATH_LEN];
 */
 get_prompt_out_t get_prompt_out (char command[]);
 
+
+
+
 // str functions +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 /**
@@ -95,7 +98,7 @@ void file_to_event_list (char filename[], date_event_t event_list[], int *n_even
  * @brief Saves a list of events into a file
  * @param n_events (int): Pass the count of the events of the event_list
 */
-void event_list_to_file (char filename[], date_event_t event_list[], int n_events);
+void event_list_to_file (char filename[], date_event_t event_list[]);
 
 /**
  * @brief a new schedule on ./schedules
@@ -114,11 +117,24 @@ void delete_file (char filename[]);
  * @param day: (optional argument: -1 to skip)
  * @pre This function does not support value errors, so month (1 - 12), day (max of the month)
 */
-void show_events_by (date_event_t events_list[], int events_list_len, int year, int month, int day);
+void show_events_by (date_event_t events_list[], int year, int month, int day);
 
 void show_available_schedules (char schedules[][MAX_FILENAME_LEN]);
 
 // ----------------------------------------------------------------------------------------------------------
+
+// data management functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**
+ * @details Gets the values of an events_list filtering by 3 fields
+ * @param year: (optional argument -1 to skip)
+ * @param month: (optional argument: -1 to skip)
+ * @param day: (optional argument: -1 to skip)
+ * @param events_id (out: int []) List of the events got. The list ends with -1
+ * @pre This function does not support value errors, so month (1 - 12), day (max of the month)
+*/
+void get_events_id_by (date_event_t events_list[], int year, int month, int day, int events_id[]);
+
+// ---------------------------------------------------------------------------------------------
 
 // specific functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

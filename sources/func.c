@@ -11,35 +11,77 @@
 #include "../include/func.h"
 
 
-// displaying functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// data management functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-void show_events_by (date_event_t events_list[], int events_list_len, int year, int month, int day)
+void get_events_id_by (date_event_t events_list[], int year, int month, int day, int events_id[])
 {
-
-    bool condition_to_show = true;
-    int events_showed_count = 0; // if the final count is 0, tell there are no events for this conditions
-    for (int i = 0; i < events_list_len; i++)
-    {
-        
-        if (year != -1)
-            condition_to_show = (year == events_list[i].date.year);
-
-        if (month != -1)
-            condition_to_show *= (month == events_list[i].date.month);
-
-        if (day != -1)
-            condition_to_show *= (day == events_list[i].date.day);
-        
-        if (condition_to_show)
+    bool condition_to_save_id = true;
+    int events_count = 0; // if the final count is 0, tell there are no events for this conditions
+    int i = 0;
+    while (events_list[events_count].description[0] != '\0')
+    {   
+        if (year != -2)
         {
-            printf("\nTime: %d/%d/%d - %d:%d\n\tDescription: %s\n\n", events_list[i].date.day, events_list[i].date.month, events_list[i].date.year
-            , events_list[i].date.hour, events_list[i].date.minute, events_list[i].description);
-            events_showed_count++;
+            if (year != -1)
+                condition_to_save_id = (year == events_list[i].date.year);
+
+            if (month != -1)
+                condition_to_save_id *= (month == events_list[i].date.month);
+
+            if (day != -1)
+                condition_to_save_id *= (day == events_list[i].date.day);
+            
+            if (condition_to_save_id)
+            {
+                events_id[events_count] = i;
+                events_count++;
+            }
         }
+
+        i++;
         
     }
 
-    if (events_showed_count == 0)
+    if (events_count == 0)
+        events_id[0] = -1; // centinella at the first position
+}
+
+
+// ---------------------------------------------------------------------------------------------
+
+// displaying functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+void show_events_by (date_event_t events_list[], int year, int month, int day)
+{
+    bool condition_to_save_id = true;
+    int events_count = 0; // if the final count is 0, tell there are no events for this conditions
+    int i = 0;
+    while (events_list[events_count].description[0] != '\0')
+    {   
+        if (year != -2)
+        {
+            if (year != -1)
+                condition_to_save_id = (year == events_list[i].date.year);
+
+            if (month != -1)
+                condition_to_save_id *= (month == events_list[i].date.month);
+
+            if (day != -1)
+                condition_to_save_id *= (day == events_list[i].date.day);
+            
+            if (condition_to_save_id)
+            {
+                printf("\nTime: %d/%d/%d - %d:%d\n\tDescription: %s\n\n", events_list[i].date.day, events_list[i].date.month, events_list[i].date.year
+                , events_list[i].date.hour, events_list[i].date.minute, events_list[i].description);
+                events_count++;
+            }
+        }
+
+        i++;
+        
+    }
+
+    if (events_count == 0)
         printf("\nNo events to show\n\n");
 }
 
@@ -199,13 +241,15 @@ void file_to_event_list (char filename[], date_event_t event_list[], int *n_even
 
         // save the n_event in the n_events output parameter
         *n_events = n_event - 1; // add -1 to the count of events because it always count one extra line to detect the end of the file
+
+        event_list[*n_events].description[0] = '\0'; // add the centinella for the first not valid event
     }
     
     
 
 }
 
-void event_list_to_file (char filename[], date_event_t event_list[], int n_events)
+void event_list_to_file (char filename[], date_event_t event_list[])
 {
     FILE *f_sch;
     char trimmed_decription[DESCRIPTION_MAX_LEN];
@@ -219,7 +263,8 @@ void event_list_to_file (char filename[], date_event_t event_list[], int n_event
     }
     else
     {
-        for (int i = 0; i < n_events; i++)
+        unsigned i = 0;
+        while (event_list[i].description[0] != '\0')
         {
             // this proccess is necessary to fprint the sring without \n, so after that is necessary to add a double quote in the same line
             strcpy(trimmed_decription, event_list[i].description);
@@ -228,6 +273,7 @@ void event_list_to_file (char filename[], date_event_t event_list[], int n_event
             fprintf(f_sch, "%d %d %d %d %d \"%s\"\n", event_list[i].date.day, event_list[i].date.month, event_list[i].date.year
             , event_list[i].date.hour, event_list[i].date.minute, trimmed_decription);
             
+            i++;
         }
         fclose(f_sch);
     }
