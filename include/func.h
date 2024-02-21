@@ -31,17 +31,14 @@ typedef struct date_t
 */
 typedef struct date_event_t
 {
+    unsigned id;
     date_t date;
     char description[DESCRIPTION_MAX_LEN];
 } date_event_t;
 // end types
 
 // functions
-/**
- * @brief This is a variant of strcpy, it copyies the <copy> to <paste> but
- * with the specifyied len and not by the end of one of the strings
-*/
-void strcpy_len (char copy[], char paste[], int str_len);
+
 
 /**
  * @brief This typedef can store the output of the <get_prompt_out> function
@@ -63,6 +60,11 @@ typedef char (*get_prompt_out_t)[MAX_SCHEDULES][MAX_PATH_LEN];
 */
 get_prompt_out_t get_prompt_out (char command[]);
 
+
+
+
+// str functions +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 /**
  * @brief Delete all
  *  , ' '
@@ -73,14 +75,19 @@ get_prompt_out_t get_prompt_out (char command[]);
 void trim_trailing_whitespace(char *str);
 
 /**
- * @brief Show all the schedule_files on ./schedules
- * Let the user select one by index, the function gives an option to create a new schedule
- * Import that file as a list of events
- * @param n_events (int*): Output parameter, here is stored the count of the events of the imported file
- * @param filename_schedule (char[]): Output parameter, here is stored the name of the selected file by the user
+ * @brief This is a variant of strcpy, it copyies the <copy> to <paste> but
+ * with the specifyied len and not by the end of one of the strings
 */
-void show_select_and_import_schedules(date_event_t events_list[], int *n_events, char filename_schedule[]);
+void strcpy_len (char copy[], char paste[], int str_len);
 
+
+bool is_numeric (char string[]);
+
+// -------------------------------------------------------------------------
+
+
+
+// file interaction functions +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
  * @brief Saves all the data of a file into a list of events
  * @param n_events: (int*): Output parameter, here is stored the count of the events of the file
@@ -91,7 +98,7 @@ void file_to_event_list (char filename[], date_event_t event_list[], int *n_even
  * @brief Saves a list of events into a file
  * @param n_events (int): Pass the count of the events of the event_list
 */
-void event_list_to_file (char filename[], date_event_t event_list[], int n_events);
+void event_list_to_file (char filename[], date_event_t event_list[]);
 
 /**
  * @brief a new schedule on ./schedules
@@ -100,13 +107,51 @@ void event_list_to_file (char filename[], date_event_t event_list[], int n_event
 void new_file (char filename[]);
 void delete_file (char filename[]);
 
+// ----------------------------------------------------------------------------------------------------------
+
+//  information display ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
- * @brief This function does not support value errors, so month (1 - 12), day (max of the month)
+ * @details Displays the values of an events_list filtering by 3 fields
+ * @param year: (optional argument -1 to skip)
  * @param month: (optional argument: -1 to skip)
  * @param day: (optional argument: -1 to skip)
+ * @pre This function does not support value errors, so month (1 - 12), day (max of the month)
 */
-void show_events_by (date_event_t events_list[], int events_list_len, int year, int month, int day);
-// end functions
+void show_events_by (date_event_t events_list[], int year, int month, int day);
+
+void show_available_schedules (char schedules[][MAX_FILENAME_LEN]);
+
+// ----------------------------------------------------------------------------------------------------------
+
+// data management functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/**
+ * @details Gets the values of an events_list filtering by 3 fields
+ * @param year: (optional argument -1 to skip)
+ * @param month: (optional argument: -1 to skip)
+ * @param day: (optional argument: -1 to skip)
+ * @param events_id (out: int []) List of the events got. The list ends with -1
+ * @pre This function does not support value errors, so month (1 - 12), day (max of the month)
+*/
+void get_events_id_by (date_event_t events_list[], int year, int month, int day, int events_id[]);
+
+// ---------------------------------------------------------------------------------------------
+
+// specific functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+void operate_schedule_menu_option (int menu_option, const char schedules_path[], char available_schedules[][MAX_FILENAME_LEN],
+date_event_t events_list[], int* events_len);
+// ---------------------------------------------------------------------------------------------
+
+// user input functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+/**
+ * @pre Input string has to be numeric or to be {"+", "-"}
+*/
+int normalize_user_input_text (char user_input_text[]);
+
+// ----------------------------------------------------------------------------------------------------------
+
+// prompt functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 /**
  * @brief Gets the path where the executable of the program is
@@ -126,6 +171,12 @@ bool get_exe_path(char out_path[]);
  * @return (bool) -> error = true
  * @pre <dirent.h>
 */
-bool ls (char directory[], char dir_list[][MAX_PATH_LEN], char file_extension[]);
+bool ls (char directory[], char dir_list[][MAX_FILENAME_LEN], char file_extension[]);
+
+// -------------------------------------------------------------------------------------
+
+// others ++++++++++++++++++++++++++++++++++++++++++++++
+void fflush2();
+// -----------------------------------------------------
 
 #endif

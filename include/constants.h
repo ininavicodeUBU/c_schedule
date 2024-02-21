@@ -1,13 +1,11 @@
 #define DESCRIPTION_MAX_LEN 100
 #define MAX_EVENTS 50
 
-#define MAX_PATH_LEN 40
+#define MAX_FILENAME_LEN 40
+#define MAX_PATH_LEN 100
 #define MAX_SCHEDULES 20
 
-// event fields
-// id, day, month, year, hour, minute, description
-#define EVENT_FIELDS 7
-
+#define MAX_TEXT_INPUT_OPTION_LEN  10
 
 // un-comment which line correspons to your OS
 #define WIN 1
@@ -21,7 +19,4 @@
 
 #endif
 
-#define SPACE " "
-
-#define SCHEDULES_PATH "../schedules"
-#define FIND_SCH_COMMAND "cd " SPACE SCHEDULES_PATH PIPE_SEPARATOR "ls *.txt"
+#define MAIN_EXE_TO_SCH_REL_PATH "/../../schedules/"
