@@ -48,7 +48,7 @@ int main ()
     bool end_program = false;
     bool end_actual_schedule;
 
-    char filename_schedule[MAX_FILENAME_LEN];
+    char filename_schedule[MAX_PATH_LEN];
     // end local variables
 
     while (!end_program)

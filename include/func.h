@@ -46,7 +46,7 @@ void strcpy_len (char copy[], char paste[], int str_len);
 /**
  * @brief This typedef can store the output of the <get_prompt_out> function
 */
-typedef char (*get_prompt_out_t)[MAX_SCHEDULES][MAX_FILENAME_LEN];
+typedef char (*get_prompt_out_t)[MAX_SCHEDULES][MAX_PATH_LEN];
 
 /**
  * Execute any command on the prompt and get its output as a list of strings,
@@ -108,5 +108,24 @@ void delete_file (char filename[]);
 void show_events_by (date_event_t events_list[], int events_list_len, int year, int month, int day);
 // end functions
 
+/**
+ * @brief Gets the path where the executable of the program is
+ * @param out_path (out: char []): Here is saved the path as string
+ * @return (bool) -> error = true
+ * @pre <windows.h> <tchar.h>
+*/
+bool get_exe_path(char out_path[]);
+
+/**
+ * @brief Executes ls command on the specifyied dir
+ * @param directory (in: char []) ls <directory>
+ * @param dir_list (out: char [][]) Here is stored the output of the ls command, 1 string by folder/file found.
+ * Centinela of dir_list -> dir_list[...][0] == '\0' is true
+ * @param file_extension (in optional: char []) |file_extension = "" to unable| Select an specific extension for the listed files,
+ * specifyied with dot -> example: .txt, .bat, .png, ...
+ * @return (bool) -> error = true
+ * @pre <dirent.h>
+*/
+bool ls (char directory[], char dir_list[][MAX_PATH_LEN], char file_extension[]);
 
 #endif

@@ -1,7 +1,13 @@
+// libraries
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
+#include <string.h>
+#include <windows.h>
+#include <tchar.h>
+#include <dirent.h>
+
+// inlcudes
 #include "../include/func.h"
 
 
@@ -17,8 +23,8 @@ void strcpy_len (char copy[], char paste[], int str_len)
 get_prompt_out_t get_prompt_out (char command[])
 {
     FILE *prompt_out_file;
-    char temp_filename[MAX_FILENAME_LEN];
-    get_prompt_out_t return_pointer = malloc(sizeof(char) * MAX_SCHEDULES * MAX_FILENAME_LEN);
+    char temp_filename[MAX_PATH_LEN];
+    get_prompt_out_t return_pointer = malloc(sizeof(char) * MAX_SCHEDULES * MAX_PATH_LEN);
 
     // execute a prompt command and save the output in prompt_out_file
     prompt_out_file = popen(command, "r");
@@ -33,9 +39,9 @@ get_prompt_out_t get_prompt_out (char command[])
         int n_filename = 0;
 
         printf("\n");
-        while (fgets(temp_filename, MAX_FILENAME_LEN, prompt_out_file) != NULL) {
+        while (fgets(temp_filename, MAX_PATH_LEN, prompt_out_file) != NULL) {
             // save each filename in the table of available_schedules
-            strcpy_len(temp_filename, (*return_pointer)[n_filename], MAX_FILENAME_LEN); // this is an special strcpy, ends the copy by len and not by '\n'
+            strcpy_len(temp_filename, (*return_pointer)[n_filename], MAX_PATH_LEN); // this is an special strcpy, ends the copy by len and not by '\n'
             n_filename++;
         }
 
@@ -200,9 +206,9 @@ void show_select_and_import_schedules(date_event_t events_list[], int *n_events,
 
     printf("\n");
 
-    char full_path[MAX_FILENAME_LEN];
+    char full_path[MAX_PATH_LEN];
     char path_prefix[] = SCHEDULES_PATH;
-    char filename[MAX_FILENAME_LEN];
+    char filename[MAX_PATH_LEN];
 
     if (user_option == -2)
     {
@@ -232,7 +238,7 @@ void show_select_and_import_schedules(date_event_t events_list[], int *n_events,
             // serial flush
             char temp; scanf("%c", &temp);
             // end of serial flush
-            fgets(filename, MAX_FILENAME_LEN, stdin);
+            fgets(filename, MAX_PATH_LEN, stdin);
 
             int i = 0;
             while ((i < n_schedule) && (same_name == 0))
@@ -297,4 +303,68 @@ void delete_file (char filename[])
     }
     else
         printf("\nERROR: Cannot delete %s", filename);
+}
+
+
+bool get_exe_path(char out_path[])
+{
+    TCHAR path[MAX_PATH];
+    bool error = false;
+
+    // Get the path of the executable
+    DWORD len = GetModuleFileName(NULL, path, MAX_PATH);
+    if (len == 0) {
+        // _tprintf(_T("Error getting executable path\n")); // enable to print the error
+        error = true;
+    }
+    else
+    {
+        // Print the directory
+        // _tprintf(_T("Executable directory: %s\n"), path); // enable to print the found path
+        strcpy(out_path, path);
+    }
+
+    return error;
+
+}
+
+
+
+bool ls (char directory[], char dir_list[][MAX_PATH_LEN], char file_extension[])
+{
+    DIR *dir;
+    struct dirent *entry;
+    bool error = false;
+
+    // Open the current directory
+    dir = opendir(directory);
+    if (dir == NULL) {
+        perror("Error opening directory");
+        error = true;
+    }
+    else
+    {
+        // Read directory entries
+        entry = readdir(dir);
+        short unsigned n_entry = 0;
+
+        while (entry != NULL) {
+            if (entry->d_type == DT_REG && strstr(entry->d_name, file_extension) != NULL) {  // Check if it is a regular file
+                // printf("%s\n", entry->d_name);
+                strcpy(dir_list[n_entry], entry->d_name);
+                n_entry++;
+            }
+            entry = readdir(dir);
+            
+        }
+
+        // add a centinela
+        dir_list[n_entry][0] = '\0';
+
+        // Close the directory
+        closedir(dir);
+
+    }
+
+    return error;
 }

@@ -1,7 +1,7 @@
 #define DESCRIPTION_MAX_LEN 100
 #define MAX_EVENTS 50
 
-#define MAX_FILENAME_LEN 40
+#define MAX_PATH_LEN 40
 #define MAX_SCHEDULES 20
 
 // event fields
