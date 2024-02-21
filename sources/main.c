@@ -39,8 +39,18 @@ int main ()
             return to MAIN
     */
 
+    // setup
+    const char SCHEDULES_PATH[MAX_PATH_LEN + MAX_FILENAME_LEN];
+    const char MAIN_EXE_PATH[MAX_PATH_LEN];
+
+    get_exe_path((char*)MAIN_EXE_PATH);
+    sprintf((char*)SCHEDULES_PATH, "%s%s", (char*)MAIN_EXE_PATH, MAIN_EXE_TO_SCH_REL_PATH);
+
+    
     // local variables    
-    int user_option;
+    char user_option[MAX_TEXT_INPUT_OPTION_LEN];
+    int noramlized_user_option;
+
 
     date_event_t event_list[MAX_EVENTS];
     int events_len;
@@ -48,8 +58,7 @@ int main ()
     bool end_program = false;
     bool end_actual_schedule;
 
-    char filename_schedule[MAX_PATH_LEN];
-    // end local variables
+// end local variables
 
     while (!end_program)
     {
@@ -57,7 +66,21 @@ int main ()
         end_actual_schedule = false;
 
         // select the schedule file
-        show_select_and_import_schedules(event_list, &events_len, filename_schedule);
+        char available_schedules[MAX_SCHEDULES][MAX_FILENAME_LEN];
+
+        ls((char*)SCHEDULES_PATH, available_schedules, ".txt"); // get the available schedules
+
+        show_available_schedules(available_schedules);
+        
+        // get the user input
+        fgets(user_option, MAX_TEXT_INPUT_OPTION_LEN, stdin);
+
+        // normalize the input
+        noramlized_user_option = normalize_user_input_text(user_option);
+
+        printf("normalized_user_option: %d", noramlized_user_option);
+        operate_schedule_menu_option(noramlized_user_option, SCHEDULES_PATH, available_schedules, event_list, &events_len);
+                
         printf("\nEvents: %d", events_len);
 
         if (events_len == -1)
@@ -65,11 +88,11 @@ int main ()
             // the option was to delete an schedule the user has to choose another
             end_actual_schedule = true;
         }
-        
 
         while (!end_actual_schedule)
         {
             // let the user choose an option
+            int user_option_end_prog_menu;
             do 
             {
                 printf("\nSelect an option ->\n");
@@ -77,32 +100,41 @@ int main ()
                     printf("\t[1] - Add event\n");
                     printf("\t[2] - Change schedule\n");
                     printf("\t[3] - End program\n");
-                
-                scanf(" %d", &user_option);
-            } while ((user_option < 0) || (user_option > 3));
+                scanf("%d", &user_option_end_prog_menu);
+
+            } while ((user_option_end_prog_menu < 0) || (user_option_end_prog_menu > 3));
+
 
             // separate both menus
             printf("\n");
 
-            if (user_option == 0) // list events of
+            if (user_option_end_prog_menu == 0) // list events of
             {
                 if (events_len > 0) // check if there is any event saved
                 {
+                    int noramlized_user_option_show_events_menu;
+                    char user_option_text_events_menu[MAX_TEXT_INPUT_OPTION_LEN];
+                    
                     do
                     {
                         printf("Show events of the ... ->\n");
-                            printf("\t[-1] - all\n");
+                            printf("\t[+] - all\n");
                             printf("\t[0] - year\n");
                             printf("\t[1] - year & month\n");
                             printf("\t[2] - year & month & day\n");
-                        scanf(" %d", &user_option);
-                    } while ((user_option < -1) || (user_option > 2));
+                        
+                        fflush2();
+                        fgets(user_option_text_events_menu, MAX_TEXT_INPUT_OPTION_LEN, stdin);
+                        
+                        noramlized_user_option_show_events_menu = normalize_user_input_text(user_option_text_events_menu);
+
+                    } while (((noramlized_user_option_show_events_menu < 0) || (noramlized_user_option_show_events_menu > 2)) && (noramlized_user_option_show_events_menu != -2));
                     
-                    if (user_option == -1)
+                    if (noramlized_user_option_show_events_menu == -2)
                     {
                         show_events_by(event_list, events_len, -1, -1, -1);
                     }
-                    else if (user_option == 0) // year
+                    else if (noramlized_user_option_show_events_menu == 0) // year
                     {
                         // local variables
                         int year;
@@ -114,7 +146,7 @@ int main ()
                         // function -> show events by year
                         show_events_by(event_list, events_len, year, -1, -1);
 
-                    } else if (user_option == 1) // year & month
+                    } else if (noramlized_user_option_show_events_menu == 1) // year & month
                     {
                         // local variables
                         int year, month;
@@ -126,7 +158,7 @@ int main ()
                         // function -> show events by year and month
                         show_events_by(event_list, events_len, year, month, -1);
 
-                    } else if (user_option == 2) // year & month & day
+                    } else if (noramlized_user_option_show_events_menu == 2) // year & month & day
                     {
                         // local variables
                         int year, month, day;
@@ -146,7 +178,7 @@ int main ()
 
                         
 
-            } else if (user_option == 1) // add event
+            } else if (user_option_end_prog_menu == 1) // add event
             {
                 bool valid_input;
                 do
@@ -174,21 +206,25 @@ int main ()
 
                 events_len++;
 
-            } else if (user_option == 2) // change schedule
+            } else if (user_option_end_prog_menu == 2) // change schedule
             {
-
+                char save_schedule_path[MAX_PATH_LEN];
+                sprintf(save_schedule_path, "%s%s", SCHEDULES_PATH, available_schedules[noramlized_user_option]);
+                event_list_to_file(save_schedule_path, event_list, events_len);
                 end_actual_schedule = true;
 
-            } else if (user_option == 3) // end program
+            } else if (user_option_end_prog_menu == 3) // end program
             {
+                char save_schedule_path[MAX_PATH_LEN];
+                sprintf(save_schedule_path, "%s%s", SCHEDULES_PATH, available_schedules[noramlized_user_option]);
+                event_list_to_file(save_schedule_path, event_list, events_len);
                 end_actual_schedule = true;
                 end_program = true;
             }
 
         }
-        // so before opening another schedule we save the data on it's file
-        if (events_len != -1) // if the actual file was not deleted, save it
-            event_list_to_file(filename_schedule, event_list, events_len);
+
+        fflush2();
         
     }
     
