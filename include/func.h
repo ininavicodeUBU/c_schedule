@@ -105,11 +105,15 @@ void event_list_to_file (char filename[], date_event_t event_list[]);
  * @param (char[]): Specify the name of the schedule
 */
 void new_file (char filename[]);
-void delete_file (char filename[]);
+
+/**
+ * @return (bool) -> error = true; (file does not exists)
+*/
+bool delete_file (char filename[]);
 
 // ----------------------------------------------------------------------------------------------------------
 
-//  information display ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// menu user_interaction & displaying functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
  * @details Displays the values of an events_list filtering by 3 fields
  * @param year: (optional argument -1 to skip)
@@ -120,6 +124,8 @@ void delete_file (char filename[]);
 void show_events_by (date_event_t events_list[], int year, int month, int day);
 
 void show_available_schedules (char schedules[][MAX_FILENAME_LEN]);
+
+void get_events_filtered_by_user (date_event_t events_list[], date_event_t out_filtered_events[]);
 
 // ----------------------------------------------------------------------------------------------------------
 
@@ -132,7 +138,7 @@ void show_available_schedules (char schedules[][MAX_FILENAME_LEN]);
  * @param events_id (out: int []) List of the events got. The list ends with CENTINELA_END_OF_EVENT_LIST_ID
  * @pre This function does not support value errors, so month (1 - 12), day (max of the month)
 */
-void get_events_id_by (date_event_t events_list[], int year, int month, int day, int events_id[]);
+void get_events_by (date_event_t events_list[], int year, int month, int day, date_event_t out_events[]);
 
 bool end_of_event_list (date_event_t event);
 
@@ -145,9 +151,11 @@ void delete_event (date_event_t events_list[], int id_to_delete);
 // ---------------------------------------------------------------------------------------------
 
 // specific functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+/**
+ * @param (out: char[]) If the user selects the option of creating a new schedule, this output parameter returns the name of that new schedule
+*/
 void operate_schedule_menu_option (int menu_option, const char schedules_path[], char available_schedules[][MAX_FILENAME_LEN],
-date_event_t events_list[], int* events_len);
+date_event_t events_list[], int* events_len, char new_sch_path[]);
 // ---------------------------------------------------------------------------------------------
 
 // user input functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

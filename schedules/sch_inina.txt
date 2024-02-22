@@ -1,7 +1,5 @@
 30 10 2023 12 0 "ininas event"
 30 10 2023 12 0 "asdf new"
 30 10 2023 11 0 "kajsndf"
-20 10 2023 12 0 "new version event"
 15 10 2023 12 0 "laksdjflkasdjf"
-12 10 2023 12 0 "lkjasd pp"
-1 10 2023 12 0 "lkajsdf pp1102023"
+10 10 2023 11 0 "last event inina"
