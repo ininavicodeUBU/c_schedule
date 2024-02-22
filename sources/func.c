@@ -13,27 +13,34 @@
 
 // data management functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-void get_events_id_by (date_event_t events_list[], int year, int month, int day, int events_id[])
+void get_events_by (date_event_t events_list[], int year, int month, int day, date_event_t out_events[])
 {
-    bool condition_to_save_id = true;
+    bool contition_to_save = true;
     int events_count = 0; // if the final count is 0, tell there are no events for this conditions
     int i = 0;
-    while (events_list[events_count].description[0] != '\0')
+    while (!end_of_event_list(events_list[i]))
     {   
-        if (year != -2)
+        if (!deleted_event(events_list[i]))
         {
             if (year != -1)
-                condition_to_save_id = (year == events_list[i].date.year);
+                contition_to_save = (year == events_list[i].date.year);
 
             if (month != -1)
-                condition_to_save_id *= (month == events_list[i].date.month);
+                contition_to_save *= (month == events_list[i].date.month);
 
             if (day != -1)
-                condition_to_save_id *= (day == events_list[i].date.day);
+                contition_to_save *= (day == events_list[i].date.day);
             
-            if (condition_to_save_id)
+            if (contition_to_save)
             {
-                events_id[events_count] = i;
+                out_events[events_count].id = events_list[i].id;
+                out_events[events_count].date.day = events_list[i].date.day;
+                out_events[events_count].date.month = events_list[i].date.month;
+                out_events[events_count].date.year = events_list[i].date.year;
+                out_events[events_count].date.hour = events_list[i].date.hour;
+                out_events[events_count].date.minute = events_list[i].date.minute;
+                strcpy(out_events[events_count].description, events_list[i].description);
+
                 events_count++;
             }
         }
@@ -42,23 +49,55 @@ void get_events_id_by (date_event_t events_list[], int year, int month, int day,
         
     }
 
-    if (events_count == 0)
-        events_id[0] = -1; // centinella at the first position
+    put_centinela_event(&out_events[events_count]);
+        
 }
 
+bool end_of_event_list (date_event_t event)
+{
+    // return true if end of the list
+    return (event.id == CENTINELA_END_OF_EVENT_LIST_ID);
+    
+}
+
+bool deleted_event (date_event_t event)
+{
+    // return true if the event is deleted
+    return (event.id == DELETED_EVENT_OF_THE_LIST);
+}
+
+void put_centinela_event (date_event_t *event)
+{
+    event->id = CENTINELA_END_OF_EVENT_LIST_ID;
+}
+
+void delete_event (date_event_t events_list[], int id_to_delete)
+{
+    int id = 0;
+    bool deleted = false;
+    while (!end_of_event_list(events_list[id]) || !deleted)
+    {
+        if (events_list[id].id == id_to_delete)
+        {
+            events_list[id].id = DELETED_EVENT_OF_THE_LIST;
+            deleted = true;  
+        } 
+        id++;
+    }
+}
 
 // ---------------------------------------------------------------------------------------------
 
-// displaying functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// menu user_interaction & displaying functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void show_events_by (date_event_t events_list[], int year, int month, int day)
 {
     bool condition_to_save_id = true;
     int events_count = 0; // if the final count is 0, tell there are no events for this conditions
     int i = 0;
-    while (events_list[events_count].description[0] != '\0')
+    while (!end_of_event_list(events_list[i]))
     {   
-        if (year != -2)
+        if (!deleted_event(events_list[i]))
         {
             if (year != -1)
                 condition_to_save_id = (year == events_list[i].date.year);
@@ -71,7 +110,7 @@ void show_events_by (date_event_t events_list[], int year, int month, int day)
             
             if (condition_to_save_id)
             {
-                printf("\nTime: %d/%d/%d - %d:%d\n\tDescription: %s\n\n", events_list[i].date.day, events_list[i].date.month, events_list[i].date.year
+                printf("\nId: %d\nTime: %d/%d/%d - %d:%d\n\tDescription: %s\n", events_list[i].id, events_list[i].date.day, events_list[i].date.month, events_list[i].date.year
                 , events_list[i].date.hour, events_list[i].date.minute, events_list[i].description);
                 events_count++;
             }
@@ -88,7 +127,7 @@ void show_events_by (date_event_t events_list[], int year, int month, int day)
 void show_available_schedules (char schedules[][MAX_FILENAME_LEN])
 {
     // default options
-    printf("[+] -> New schedule\n");
+    printf("\n[+] -> New schedule\n");
     printf("[-] -> Delete schedule\n");
 
     // print to the user the available schedules
@@ -100,12 +139,74 @@ void show_available_schedules (char schedules[][MAX_FILENAME_LEN])
     }
 }
 
+void get_events_filtered_by_user (date_event_t events_list[], date_event_t out_filtered_events[])
+{
+    int noramlized_user_option_show_events_menu;
+    char user_option_text_events_menu[MAX_TEXT_INPUT_OPTION_LEN];
+    
+    do
+    {
+        printf("Filter by ... ->\n");
+            printf("\t[+] - all\n");
+            printf("\t[0] - year\n");
+            printf("\t[1] - year & month\n");
+            printf("\t[2] - year & month & day\n");
+        
+        fflush2();
+        fgets(user_option_text_events_menu, MAX_TEXT_INPUT_OPTION_LEN, stdin);
+        
+        noramlized_user_option_show_events_menu = normalize_user_input_text(user_option_text_events_menu);
+
+    } while (((noramlized_user_option_show_events_menu < 0) || (noramlized_user_option_show_events_menu > 2)) && (noramlized_user_option_show_events_menu != -2));
+    
+    if (noramlized_user_option_show_events_menu == -2)
+    {
+        get_events_by(events_list, -1, -1, -1, out_filtered_events);
+    }
+    else if (noramlized_user_option_show_events_menu == 0) // year
+    {
+        // local variables
+        int year;
+        // end local variables
+        printf("\n");
+
+        // select the year
+        printf("Intro the year of the events to show: "); scanf(" %d", &year);
+        // function -> show events by year
+        get_events_by(events_list, year, -1, -1, out_filtered_events);
+
+    } else if (noramlized_user_option_show_events_menu == 1) // year & month
+    {
+        // local variables
+        int year, month;
+        // end local variables
+        printf("\n");
+
+        // select the year
+        printf("Intro the year & month of the events to show MM/YYYY: "); scanf(" %d/%d", &month, &year);
+        // function -> show events by year and month
+        get_events_by(events_list, year, month, -1, out_filtered_events);
+
+    } else if (noramlized_user_option_show_events_menu == 2) // year & month & day
+    {
+        // local variables
+        int year, month, day;
+        // end local variables
+        printf("\n");
+
+        // select the year
+        printf("Intro the year & month of the events to show DD/MM/YYYY: "); scanf(" %d/%d/%d", &day, &month, &year);
+        // function -> show events by year and month and day
+        get_events_by(events_list, year, month, day, out_filtered_events);
+    }
+}
+
 // ---------------------------------------------------------------------------------------------
 
 // specific functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void operate_schedule_menu_option (int menu_option, const char schedules_path[], char available_schedules[][MAX_FILENAME_LEN],
-date_event_t events_list[], int* events_len)
+date_event_t events_list[], int* events_len, char new_sch_path[])
 {
     if (menu_option == -2) // new schedule
     {   
@@ -115,25 +216,33 @@ date_event_t events_list[], int* events_len)
         printf("\nWrite the name of the schedule: ");
         fgets(new_schedule_name, MAX_FILENAME_LEN, stdin);
         trim_trailing_whitespace(new_schedule_name);
-        sprintf(new_schedule_path, "%s%s", schedules_path, new_schedule_name); strcat(new_schedule_path, ".txt");
+        // sprintf(new_schedule_path, "%s%s", schedules_path, new_schedule_name); strcat(new_schedule_path, ".txt");
         new_file(new_schedule_path);
         file_to_event_list(new_schedule_path, events_list, events_len);
+
+        // writing the output parameter
+        strcpy(new_sch_path, new_schedule_name);
     }
-    else if (menu_option == -1)
+    else if (menu_option == -1) // delete schedule
     {
-        short unsigned schedule_to_delete;
+        unsigned schedule_to_delete;
         char delete_schedule_path[MAX_PATH_LEN];
 
-        printf("Select one schedule to delete: ");
-        scanf(" %d", schedule_to_delete);
-        sprintf(delete_schedule_path, "%s%s", schedules_path, available_schedules[schedule_to_delete]);
-        delete_file(delete_schedule_path);
+        do
+        {
+            printf("\nSelect one schedule to delete: ");
+            scanf(" %u", &schedule_to_delete);
+            sprintf(delete_schedule_path, "%s%s", schedules_path, available_schedules[schedule_to_delete]);
+        } while ((schedule_to_delete < 0) || delete_file(delete_schedule_path));
+
+        *events_len = -1; // indicate that the option of the user was to delete a file
     }
     else
     {
         char open_schedule_path[MAX_PATH_LEN];
         sprintf(open_schedule_path, "%s%s", schedules_path, available_schedules[menu_option]);
         file_to_event_list(open_schedule_path, events_list, events_len);
+        strcpy(new_sch_path, open_schedule_path);
     }
 }
 
@@ -242,7 +351,7 @@ void file_to_event_list (char filename[], date_event_t event_list[], int *n_even
         // save the n_event in the n_events output parameter
         *n_events = n_event - 1; // add -1 to the count of events because it always count one extra line to detect the end of the file
 
-        event_list[*n_events].description[0] = '\0'; // add the centinella for the first not valid event
+        put_centinela_event(&event_list[*n_events]); // add the centinella for the end of the events list
     }
     
     
@@ -264,15 +373,19 @@ void event_list_to_file (char filename[], date_event_t event_list[])
     else
     {
         unsigned i = 0;
-        while (event_list[i].description[0] != '\0')
+        while (!end_of_event_list(event_list[i]))
         {
-            // this proccess is necessary to fprint the sring without \n, so after that is necessary to add a double quote in the same line
-            strcpy(trimmed_decription, event_list[i].description);
-            trim_trailing_whitespace(trimmed_decription);
-            
-            fprintf(f_sch, "%d %d %d %d %d \"%s\"\n", event_list[i].date.day, event_list[i].date.month, event_list[i].date.year
-            , event_list[i].date.hour, event_list[i].date.minute, trimmed_decription);
-            
+            if (!deleted_event(event_list[i]))
+            {
+                // this proccess is necessary to fprint the sring without \n, so after that is necessary to add a double quote in the same line
+                strcpy(trimmed_decription, event_list[i].description);
+                trim_trailing_whitespace(trimmed_decription);
+                
+                fprintf(f_sch, "%d %d %d %d %d \"%s\"\n", event_list[i].date.day, event_list[i].date.month, event_list[i].date.year
+                , event_list[i].date.hour, event_list[i].date.minute, trimmed_decription);
+
+            }
+
             i++;
         }
         fclose(f_sch);
@@ -296,14 +409,18 @@ void new_file (char filename[])
     fclose(new_file);
 }
 
-void delete_file (char filename[])
+bool delete_file (char filename[])
 {
     if (remove(filename) == 0)
     {
         printf("\nFile %s deleted", filename);
+        return 0;
     }
     else
+    {
         printf("\nERROR: Cannot delete %s", filename);
+        return 1;
+    }
 }
 
 // -----------------------------------------------------------------------
