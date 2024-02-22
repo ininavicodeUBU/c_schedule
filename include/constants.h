@@ -20,3 +20,6 @@
 #endif
 
 #define MAIN_EXE_TO_SCH_REL_PATH "/../../schedules/"
+
+#define CENTINELA_END_OF_EVENT_LIST_ID -2
+#define DELETED_EVENT_OF_THE_LIST -1

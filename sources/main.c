@@ -116,10 +116,11 @@ int main ()
                 {
                     int noramlized_user_option_show_events_menu;
                     char user_option_text_events_menu[MAX_TEXT_INPUT_OPTION_LEN];
+                    int list_of_events_to_show[MAX_EVENTS];
                     
                     do
                     {
-                        printf("Show events of the ... ->\n");
+                        printf("Filter by ... ->\n");
                             printf("\t[+] - all\n");
                             printf("\t[0] - year\n");
                             printf("\t[1] - year & month\n");
@@ -182,6 +183,8 @@ int main ()
 
             } else if (user_option_end_prog_menu == 1) // add event
             {
+                // when a new event is added is necessary to re-write the centinella at the new end of the list
+                // it's necessary too to add a new id, so this will be the (events_len)
                 bool valid_input;
                 do
                 {
@@ -206,10 +209,15 @@ int main ()
                 // end stream flush
                 fgets(event_list[events_len].description, DESCRIPTION_MAX_LEN, stdin);
 
+                // add the centinela & the new id
+                event_list[events_len].id = (events_len);
+                put_centinela_event(&event_list[events_len + 1]);
+
                 events_len++;
 
             } else if (user_option_end_prog_menu == 2) // delete event
             {
+                
 
             } else if (user_option_end_prog_menu == 3) // change schedule
             {

@@ -18,9 +18,9 @@ void get_events_id_by (date_event_t events_list[], int year, int month, int day,
     bool condition_to_save_id = true;
     int events_count = 0; // if the final count is 0, tell there are no events for this conditions
     int i = 0;
-    while (events_list[events_count].description[0] != '\0')
+    while (!end_of_event_list(events_list[events_count]))
     {   
-        if (year != -2)
+        if (!deleted_event(events_list[events_count]))
         {
             if (year != -1)
                 condition_to_save_id = (year == events_list[i].date.year);
@@ -42,10 +42,42 @@ void get_events_id_by (date_event_t events_list[], int year, int month, int day,
         
     }
 
-    if (events_count == 0)
-        events_id[0] = -1; // centinella at the first position
+    events_id[events_count] = CENTINELA_END_OF_EVENT_LIST_ID; // centinella at the first position
+        
 }
 
+bool end_of_event_list (date_event_t event)
+{
+    // return true if end of the list
+    return (event.id == CENTINELA_END_OF_EVENT_LIST_ID);
+    
+}
+
+bool deleted_event (date_event_t event)
+{
+    // return true if the event is deleted
+    return (event.id == DELETED_EVENT_OF_THE_LIST);
+}
+
+void put_centinela_event (date_event_t *event)
+{
+    event->id = CENTINELA_END_OF_EVENT_LIST_ID;
+}
+
+void delete_event (date_event_t events_list[], int id_to_delete)
+{
+    int id = 0;
+    bool deleted = false;
+    while (!end_of_event_list(events_list[id]) || !deleted)
+    {
+        if (events_list[id].id == id_to_delete)
+        {
+            events_list[id].id = DELETED_EVENT_OF_THE_LIST;
+            deleted = true;  
+        } 
+        id++;
+    }
+}
 
 // ---------------------------------------------------------------------------------------------
 
@@ -56,9 +88,9 @@ void show_events_by (date_event_t events_list[], int year, int month, int day)
     bool condition_to_save_id = true;
     int events_count = 0; // if the final count is 0, tell there are no events for this conditions
     int i = 0;
-    while (events_list[events_count].description[0] != '\0')
+    while (!end_of_event_list(events_list[i]))
     {   
-        if (year != -2)
+        if (!deleted_event(events_list[i]))
         {
             if (year != -1)
                 condition_to_save_id = (year == events_list[i].date.year);
@@ -242,7 +274,7 @@ void file_to_event_list (char filename[], date_event_t event_list[], int *n_even
         // save the n_event in the n_events output parameter
         *n_events = n_event - 1; // add -1 to the count of events because it always count one extra line to detect the end of the file
 
-        event_list[*n_events].description[0] = '\0'; // add the centinella for the first not valid event
+        put_centinela_event(&event_list[*n_events]); // add the centinella for the end of the events list
     }
     
     
@@ -264,16 +296,20 @@ void event_list_to_file (char filename[], date_event_t event_list[])
     else
     {
         unsigned i = 0;
-        while (event_list[i].description[0] != '\0')
+        while (!end_of_event_list(event_list[i]))
         {
-            // this proccess is necessary to fprint the sring without \n, so after that is necessary to add a double quote in the same line
-            strcpy(trimmed_decription, event_list[i].description);
-            trim_trailing_whitespace(trimmed_decription);
-            
-            fprintf(f_sch, "%d %d %d %d %d \"%s\"\n", event_list[i].date.day, event_list[i].date.month, event_list[i].date.year
-            , event_list[i].date.hour, event_list[i].date.minute, trimmed_decription);
-            
-            i++;
+            if (!deleted_event(event_list[i]))
+            {
+                // this proccess is necessary to fprint the sring without \n, so after that is necessary to add a double quote in the same line
+                strcpy(trimmed_decription, event_list[i].description);
+                trim_trailing_whitespace(trimmed_decription);
+                
+                fprintf(f_sch, "%d %d %d %d %d \"%s\"\n", event_list[i].date.day, event_list[i].date.month, event_list[i].date.year
+                , event_list[i].date.hour, event_list[i].date.minute, trimmed_decription);
+                
+                i++;
+
+            }
         }
         fclose(f_sch);
     }

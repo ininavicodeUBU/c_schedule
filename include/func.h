@@ -31,7 +31,7 @@ typedef struct date_t
 */
 typedef struct date_event_t
 {
-    unsigned id;
+    int id;
     date_t date;
     char description[DESCRIPTION_MAX_LEN];
 } date_event_t;
@@ -129,10 +129,18 @@ void show_available_schedules (char schedules[][MAX_FILENAME_LEN]);
  * @param year: (optional argument -1 to skip)
  * @param month: (optional argument: -1 to skip)
  * @param day: (optional argument: -1 to skip)
- * @param events_id (out: int []) List of the events got. The list ends with -1
+ * @param events_id (out: int []) List of the events got. The list ends with CENTINELA_END_OF_EVENT_LIST_ID
  * @pre This function does not support value errors, so month (1 - 12), day (max of the month)
 */
 void get_events_id_by (date_event_t events_list[], int year, int month, int day, int events_id[]);
+
+bool end_of_event_list (date_event_t event);
+
+bool deleted_event (date_event_t event);
+
+void put_centinela_event (date_event_t *event);
+
+void delete_event (date_event_t events_list[], int id_to_delete);
 
 // ---------------------------------------------------------------------------------------------
 
