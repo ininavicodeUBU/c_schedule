@@ -1,0 +1,42 @@
+#-------------------------------------------------------------------------------
+# Example Makefile to compile, link and debug C code on MINGW32 platforms
+# Authors: Santiago Romani, Pere Millan
+# Date: May 2020
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# options for code generation
+#-------------------------------------------------------------------------------
+CCFLAGS	:= 
+LIBS := -lgdi32
+
+
+#-------------------------------------------------------------------------------
+# make commands
+#-------------------------------------------------------------------------------
+GUI_main.exe : sources/GUI_main.c sources/GUI_func.c include/GUI_func.h include/GUI_constants.h
+	gcc .\sources\GUI_main.c .\sources\GUI_func.c .\sources\func.c -o GUI_main $(LIBS)
+
+
+#-------------------------------------------------------------------------------
+# clean commands
+#-------------------------------------------------------------------------------
+clean :
+	@echo Please remember that it is ***_NOT_*** always necessary to clean all \
+		  binary files before every make of the project
+	@sleep 5
+	@rm -fv GUI_main.exe
+
+
+#-------------------------------------------------------------------------------
+# debug commands (open gdb in a new shell window)
+#-------------------------------------------------------------------------------
+debug : GUI_main.exe
+	start gdb GUI_main.exe
+
+#-------------------------------------------------------------------------------
+# run commands (executes test_isprime.exe)
+#-------------------------------------------------------------------------------
+run : GUI_main.exe
+	./GUI_main.exe
+	

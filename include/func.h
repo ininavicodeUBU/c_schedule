@@ -1,5 +1,5 @@
-#ifndef AUX_H
-#define AUX_H
+#ifndef FUNC_H
+#define FUNC_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -132,10 +132,11 @@ void get_events_filtered_by_user (date_event_t events_list[], date_event_t out_f
 // data management functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
  * @details Gets the values of an events_list filtering by 3 fields
+ * @param events_list: (in: date_event_t []) List of the events to filter
  * @param year: (optional argument -1 to skip)
  * @param month: (optional argument: -1 to skip)
  * @param day: (optional argument: -1 to skip)
- * @param events_id (out: int []) List of the events got. The list ends with CENTINELA_END_OF_EVENT_LIST_ID
+ * @param out_events (out: int []) List of the events got. The list ends with CENTINELA_END_OF_EVENT_LIST_ID
  * @pre This function does not support value errors, so month (1 - 12), day (max of the month)
 */
 void get_events_by (date_event_t events_list[], int year, int month, int day, date_event_t out_events[]);
