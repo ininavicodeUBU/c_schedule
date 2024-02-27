@@ -23,7 +23,7 @@ typedef struct GUI_t
 // menu objects control ++++++++++++++++++++++++++++++
 void SetButtonBackgroundColor(HWND hwndButton, COLORREF color);
 
-void DrawCustomButton(LPDRAWITEMSTRUCT lpdis, COLORREF bgColor);
+void DrawCustomButton(LPDRAWITEMSTRUCT lpdis, COLORREF bgColor, char text[]);
 
 // ---------------------------------------------------
 
@@ -32,10 +32,15 @@ void DrawCustomButton(LPDRAWITEMSTRUCT lpdis, COLORREF bgColor);
 void create_buttons_days (HWND hwnd, HWND buttons_of_the_days []);
 
 void create_buttons_schedules (HWND hwnd, HWND buttons_of_schedules []);
+
+void create_combo_boxes (HWND hwnd, HWND days_combo_box, HWND months_combo_box, HWND year_combo_box);
+
+void create_combo_box (HWND hwnd, HWND combo_box, char options[][10], unsigned left_margin,
+unsigned top_margin, unsigned width, unsigned height, int combo_box_ID);
 // ---------------------------------------------------
 
 // button_colors management ++++++++++++++++++++++++++++
-void paint_day_buttons (HWND hwnd, HWND list_of_buttons [], date_event_t events_of_month[]);
+void paint_day_buttons (HWND hwnd, HWND list_of_buttons [], date_event_t events_of_month[], COLORREF list_of_the_color_button []);
 
 void make_visible_buttons_days (HWND hwnd, HWND buttons_of_the_days []);
 

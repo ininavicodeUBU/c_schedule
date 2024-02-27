@@ -1,101 +1,93 @@
 #include <windows.h>
 
-// Step 4: the Window Procedure
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (msg)
-    {
-        case WM_COMMAND:
-            switch (LOWORD(wParam))
-            {
-                case 0: // Button ID for "New Schedule"
-                    MessageBox(hwnd, "New Schedule button_new_sch clicked!", "Button Clicked", MB_OK); // window type (HWND), Message, Window message Title
-                    break;
+// Function to handle messages for the main window
+LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    switch (message) {
+        case WM_CREATE: {
+            // Create a combo box
+            HWND comboBox = CreateWindow("ComboBox", NULL, 
+                CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE, 
+                10, 10, 150, 200, 
+                hwnd, (HMENU)1, GetModuleHandle(NULL), NULL);
 
-                case 1: // Delete schedule button
-                    MessageBox(hwnd, "Delete button clicked", "Button Clicked", MB_OK);
-                    break;
+            // Add items to the combo box
+            SendMessage(comboBox, CB_ADDSTRING, 0, (LPARAM)"Option 1");
+            SendMessage(comboBox, CB_ADDSTRING, 0, (LPARAM)"Option 2");
+            SendMessage(comboBox, CB_ADDSTRING, 0, (LPARAM)"Option 3");
+
+            // Set the default selection
+            SendMessage(comboBox, CB_SETCURSEL, 0, 0);
+
+            break;
+        }
+
+        case WM_COMMAND: {
+            if (LOWORD(wParam) == 1 && HIWORD(wParam) == CBN_SELCHANGE) {
+                // Combo box selection changed
+                HWND comboBox = GetDlgItem(hwnd, 1);
+
+                // Get the index of the selected item
+                int selectedIndex = SendMessage(comboBox, CB_GETCURSEL, 0, 0);
+
+                // Get the text of the selected item
+                char buffer[256];
+                SendMessage(comboBox, CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
+
+                // Display the selected item
+                MessageBox(hwnd, buffer, "Selected Item", MB_OK);
             }
             break;
-        case WM_CLOSE:
-            DestroyWindow(hwnd);
-            break;
-        case WM_DESTROY:
+        }
+
+        case WM_DESTROY: {
             PostQuitMessage(0);
             break;
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
+        }
+
+        default: {
+            return DefWindowProc(hwnd, message, wParam, lParam);
+        }
     }
+
     return 0;
 }
 
-// Step 5: the entry point
-int main()
-{
-    // Step 1: Registering the Window Class
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    // Register the window class
+    const char* CLASS_NAME = "Sample Window Class";
+
     WNDCLASS wc = {0};
     wc.lpfnWndProc = WndProc;
-    wc.hInstance = GetModuleHandle(NULL);
-    wc.hbrBackground = (HBRUSH)(COLOR_BACKGROUND);
-    wc.lpszClassName = "MyWindowClass";
+    wc.hInstance = hInstance;
+    wc.lpszClassName = CLASS_NAME;
+
     RegisterClass(&wc);
 
-    // Step 2: Creating the Window
+    // Create the window
     HWND hwnd = CreateWindowEx(
-        0,
-        "MyWindowClass",
-        "My Window",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
-        NULL, NULL, GetModuleHandle(NULL), NULL);
+        0,                              // Optional window styles
+        CLASS_NAME,                     // Window class
+        "ComboBox Example",             // Window text
+        WS_OVERLAPPEDWINDOW,            // Window style
 
-    // Step 3.1: Create the <new schedule> button_new_sch
-    HWND button_new_sch = CreateWindow(
-        "BUTTON",
-        "New Schedule",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10, 10, 120, 30,
-        hwnd,
-        (HMENU)0, // Button ID
-        (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
-        NULL);
+        // Size and position
+        CW_USEDEFAULT, CW_USEDEFAULT, 400, 300,
 
-    // Step 3.2: Create the <delete schedule> button delete_sch
-    HWND button_delete_sch = CreateWindow(
-        "BUTTON",
-        "Delete Schedule",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10, 40, 120, 30, // default is 10, 10, 120, height
-        hwnd,
-        (HMENU)1, // Button ID
-        (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
-        NULL);
+        NULL,       // Parent window    
+        NULL,       // Menu
+        hInstance,  // Instance handle
+        NULL        // Additional application data
+    );
 
-    // Step 3.1b: Set Font for the button_new_sch (optional)
-    HFONT hFont_new_sch = CreateFont(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
-        CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
-    SendMessage(button_new_sch, WM_SETFONT, (WPARAM)hFont_new_sch, MAKELPARAM(TRUE, 0));
+    if (hwnd == NULL) {
+        return 0;
+    }
 
-    // Step 3.2b: Set Font for the button delete_sch (optional)
-    HFONT hFont_delete_sch = CreateFont(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
-        CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
-    SendMessage(button_delete_sch, WM_SETFONT, (WPARAM)hFont_delete_sch, MAKELPARAM(TRUE, 0));
+    ShowWindow(hwnd, nCmdShow);
 
-    // Step 3.1c: Display the Button
-    ShowWindow(button_new_sch, SW_SHOWNORMAL);
-    UpdateWindow(button_new_sch);
-
-    ShowWindow(button_delete_sch, SW_SHOWNORMAL);
-    UpdateWindow(button_delete_sch);
-
-    // Step 3d: Display the Window
-    ShowWindow(hwnd, SW_SHOWDEFAULT);
-    UpdateWindow(hwnd);
-
-    // Step 6: The Message Loop
+    // Run the message loop
     MSG msg = {0};
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
+    while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }

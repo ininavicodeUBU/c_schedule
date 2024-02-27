@@ -85,7 +85,6 @@ void delete_event (date_event_t events_list[], int id_to_delete)
         id++;
     }
 }
-
 // ---------------------------------------------------------------------------------------------
 
 // menu user_interaction & displaying functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -203,7 +202,7 @@ void get_events_filtered_by_user (date_event_t events_list[], date_event_t out_f
 
 // ---------------------------------------------------------------------------------------------
 
-// specific functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// specific menu functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void operate_schedule_menu_option (int menu_option, const char schedules_path[], char available_schedules[][MAX_FILENAME_LEN],
 date_event_t events_list[], int* events_len, char new_sch_path[])

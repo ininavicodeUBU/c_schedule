@@ -11,13 +11,14 @@ void SetButtonBackgroundColor(HWND hwndButton, COLORREF color)
     SetClassLongPtr(hwndButton, GCLP_HBRBACKGROUND, (LONG_PTR)CreateSolidBrush(color));
 }
 
-// Function to handle custom drawing of the button
-void DrawCustomButton(LPDRAWITEMSTRUCT lpdis, COLORREF bgColor)
+void DrawCustomButton(LPDRAWITEMSTRUCT lpdis, COLORREF bgColor, char text[])
 {
     SetBkColor(lpdis->hDC, bgColor);
     ExtTextOut(lpdis->hDC, 0, 0, ETO_OPAQUE, &lpdis->rcItem, NULL, 0, NULL);
-    DrawText(lpdis->hDC, "New Schedule", -1, &lpdis->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    DrawText(lpdis->hDC, text, -1, &lpdis->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }
+
+
 
 // initialization +++++++++++++++++++++++++++++++++++++++
 void create_buttons_days (HWND hwnd, HWND buttons_of_the_days [])
@@ -29,7 +30,7 @@ void create_buttons_days (HWND hwnd, HWND buttons_of_the_days [])
         buttons_of_the_days[i] = CreateWindow(
             "BUTTON",
             button_text,
-            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
             DAY_BUTTONS_LEFT_MARGIN + (i % 7) * DAY_BUTTONS_WIDTH,
             DAY_BUTTONS_TOP_MARGIN + (int)(i / 7) * DAY_BUTTONS_HEIGHT,
             DAY_BUTTONS_WIDTH, DAY_BUTTONS_HEIGHT,
@@ -114,14 +115,74 @@ void create_buttons_schedules (HWND hwnd, HWND buttons_of_schedules [])
     }
 }
 
+void create_combo_boxes (HWND hwnd, HWND days_combo_box, HWND months_combo_box, HWND year_combo_box)
+{
+    char combo_box_options[31][10];
+
+    // combo box for days
+    for (int i = 0; i < 31; i++)
+        sprintf((char*)combo_box_options[i], "%d", i + 1);
+
+    combo_box_options[31][0] = '\0';
+    create_combo_box(hwnd, days_combo_box, combo_box_options,
+    CMB_BOX_DAYS_LEFT_MARGIN,
+    CMB_BOX_DAYS_TOP_MARGIN, CMB_BOX_DAYS_WIDTH, CMB_BOX_DAYS_HEIGHT, CMB_BOX_DAYS_ID);
+
+    // combo box for moths
+    for (int i = 0; i < 12; i++)
+        sprintf((char*)combo_box_options[i], "%d", i + 1);
+
+    combo_box_options[12][0] = '\0';
+    create_combo_box(hwnd, months_combo_box, combo_box_options,
+    CMB_BOX_MONTHS_LEFT_MARGIN,
+    CMB_BOX_MONTHS_TOP_MARGIN, CMB_BOX_MONTHS_WIDTH, CMB_BOX_MONTHS_HEIGHT, CMB_BOX_MONTHS_ID);
+
+    // combo box for days
+    for (int i = 0; i < 40; i++)
+        sprintf((char*)combo_box_options[i], "%d", 2022 + i);
+
+    combo_box_options[40][0] = '\0';
+    create_combo_box(hwnd, year_combo_box, combo_box_options,
+    CMB_BOX_YEARS_LEFT_MARGIN,
+    CMB_BOX_YEARS_TOP_MARGIN, CMB_BOX_YEARS_WIDTH, CMB_BOX_YEARS_HEIGHT, CMB_BOX_YEARS_ID);
+}
+
+void create_combo_box (HWND hwnd, HWND combo_box, char options[][10], unsigned left_margin,
+unsigned top_margin, unsigned width, unsigned height, int combo_box_ID) // options ends with options[n][0] 
+{
+    // Crear la casilla desplegable (combobox)
+    combo_box = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        left_margin, top_margin, width,
+        height,
+        hwnd,
+        (HMENU)combo_box_ID,
+        GetModuleHandle(NULL),
+        NULL);
+
+    // Agregar números del 1 al 12 al combobox
+    int i = 0;
+    while (options[i][0] != '\0')
+    {
+        // Agregar el elemento al combobox
+        SendMessage(combo_box, CB_ADDSTRING, 0, (LPARAM)options[i]);
+        i++;
+    }
+
+    // Establecer el primer elemento como seleccionado por defecto
+    SendMessage(combo_box, CB_SETCURSEL, 0, 0);
+}
 // -----------------------------------------------------
 
 // buttons management ++++++++++++++++++++++++++++
-void paint_day_buttons (HWND hwnd, HWND list_of_buttons [], date_event_t events_of_month[])
+void paint_day_buttons (HWND hwnd, HWND list_of_buttons [], date_event_t events_of_month[], COLORREF list_of_the_color_button [])
 {
     int i = 0;
-    while (i < 31) // reset all to buttons to its default color
+    while (i < 31) // reset all the buttons to its default color
     {
+        list_of_the_color_button[i] = RGB(156, 156, 156);
         SetButtonBackgroundColor(list_of_buttons[events_of_month[i].date.day - 1], RGB(156, 156, 156));
         i++;
     }
@@ -129,7 +190,8 @@ void paint_day_buttons (HWND hwnd, HWND list_of_buttons [], date_event_t events_
     i = 0;
     while (!end_of_event_list(events_of_month[i]))
     {
-        printf("\nSetting to blue %d at day %d", i, list_of_buttons[events_of_month[i].date.day - 1]);
+        list_of_the_color_button[events_of_month[i].date.day - 1] = RGB(109, 123, 240);
+        // printf("\nSetting to blue %d at day %d", i, events_of_month[i].date.day);
         SetButtonBackgroundColor(list_of_buttons[events_of_month[i].date.day - 1], RGB(109, 123, 240));
         
         i++;

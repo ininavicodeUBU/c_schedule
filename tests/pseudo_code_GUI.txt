@@ -11,7 +11,7 @@ struct GUI_t
 buttons_of_the_days: button_t []
 labels_of_menus: HWND [][] ### one row for each menu
 buttons_of_menus: HWND [][] ### one row for each menu
-buttons_of_schedules HWND []
+buttons_of_schedules HWND [MAX_SCHEDULES]
 GUI: GUI_t
 ########################
 
@@ -54,34 +54,29 @@ main ()
 ### Functions ####
 void callback_of_buttons ()
 {
-    switch (GUI.main_menu_index)
+    switch (button_id_pressed)
     {
-        case MENU_SELECT_SCHEDULE:
-            switch (button_id_selected_schedule)
+            
+        case DELETE_SCHEDULE:
+            ...
+            break;
+        
+        case NEW_SCHEDULE:
+            ...
+            break;
+        
+        default:
+            if (button_id_selected_schedule < 100)
             {
-                case DELETE_SCHEDULE:
-                    ...
-                    break;
+                ### schedule selected ###
                 
-                case NEW_SCHEDULE:
-                    ...
-                    break;
-                
-                default:
-                    if (button_id_selected_schedule >= 2)
-                    {
-                        ### then make invisible all the labels and buttons of this menu before changing its value
-                        ocult_menu_objects(GUI)
-
-                        GUI.main_menu_index = MENU_ON_SCHEDULE
-                        GUI.option[0] = button_id_selected_schedule; 
-                        ### then we will access to the right schedule by <button_id_selected_schedule - 2> because the first
-                        ### schedule button id starts with 2
-
-                        ### and then make visible the new menu objects
-                        make_visible_menu_objects(GUI)
-                        
-                    }
             }
+
+            else if (button_id_selected_schedule >= 100)
+            {
+                ### day pressed ###
+                
+            }
+            
     }
 }

@@ -15,53 +15,23 @@ Screen_t
 So the menu is described with its ID and it's respective screen for each ID,
 corresponding the ID of the menu with a the index of the array that contains the screens
 
-### Definitions of the menus ###
-MENU_SELECT_SCHEDULE = 0
-    Options [0]:
-    -> DELETE_SCHEDULE = 0
-    -> NEW_SCHEDULE = 1
-    -> SELECT_SCHEDULE = [0, ..., n_schedules] + 2
-
-MENU_ON_SCHEDULE = 1
-    The user will see a calendar, this calendar shows 1 month at a time, so the starting month shown will be
-    the actual one (got with the local time of the pc), then the user is able to change the DD/MM/YYYY
-    When the days of the month are displayed, by default they will be GRAY, but the days that contains at least 1 event,
-    will be BLUE
-    Then when the user clicks a day, we change to a sub-screen that shows all the events of that day,
-    then when the user wants to get back he presses a button
-
-    Options: 
-        -> YEAR = [2023, ..., USHRT_MAX] ### USHRT_MAX form <limits.h> ###
-        -> MONTH = [1, 12]
-        -> DAY = [1, ..., respective_end_day_of_the_month_showed]
-            ### Enter to a sub menu ### 
-            Options [0]:
-                -> RETURN_TO_MENU_ON_SCHEDULE = 1
-
-### Data structures ###
-+ To move arround menus we need:
-    -> MAIN_MENU_INDEX: (unsigned short) = [MENU_SELECT_SCHEDULE, MENU_ON_SCHEDULE]
-    -> OPTION: (unsigned short [N_SUBMENUS]) = [[0, USHRT_MAX], ..., ...] ### Option is an array due possible submenus into submenus ###
-    -> DATE: date_t ### The actual shown date is a struct. Not all the fields are used ###
-        date_t {
-            int minute;
-            int hour;
-            int day;
-            int month;
-            int year;
-        }
-
-+ To save the labels&buttons on each screen:
-    -> BUTTONS_OF_THE_DAYS: (HWND []) ### This contains the 31 possible buttons for the days ###
-    -> LABELS_OF_THE_SCREEN []: (HWND []) ### One list of labels for each screen ###
+### Definitions of the ID of the buttons ###
+[0] -> DELETE_SCHEDULE
+[1] -> NEW_SCHEDULE
+[2 - 99] -> SELECT SCHEDULE
+[>= 100] -> DAY BUTTON
 
 
-########################### ANOTATIONS #############################
--> ShowWindow(<object>, <PARAMETER>);
-Description: This makes modifyies the visibility of an object of the screen
-    + SW_HIDE -> This disables visibility
-    + SW_SHOWNORMAL -> This enables
+1.
+There are no days shown until the user selects an schedule
 
+2.
+The user will see a calendar, this calendar shows 1 month at a time, so the starting month shown will be
+the actual one (got with the local time of the pc), then the user is able to change the DD/MM/YYYY
+When the days of the month are displayed, by default they will be GRAY, but the days that contains at least 1 event,
+will be BLUE
 
--> EnableWindow(<object>, <bool>);
-Description: This keeps the object visible but it does not generates any event when is pressed
+3.
+Then when the user clicks a day we list the events of that day at the right side of the screen
+, showing the hour:minute:second and the description of the event
+
