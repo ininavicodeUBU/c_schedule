@@ -33,10 +33,10 @@ void create_buttons_days (HWND hwnd, HWND buttons_of_the_days []);
 
 void create_buttons_schedules (HWND hwnd, HWND buttons_of_schedules []);
 
-void create_combo_boxes (HWND hwnd, HWND days_combo_box, HWND months_combo_box, HWND year_combo_box);
+void create_combo_boxes (HWND hwnd, HWND months_combo_box, HWND year_combo_box, GUI_t *GUI);
 
-void create_combo_box (HWND hwnd, HWND combo_box, char options[][10], unsigned left_margin,
-unsigned top_margin, unsigned width, unsigned height, int combo_box_ID);
+void create_combo_box (HWND hwnd, HWND combo_box, char options[][256], unsigned left_margin,
+unsigned top_margin, unsigned width, unsigned height, int combo_box_ID, int default_option);
 // ---------------------------------------------------
 
 // button_colors management ++++++++++++++++++++++++++++

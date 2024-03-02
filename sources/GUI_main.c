@@ -15,9 +15,9 @@
 HWND buttons_of_the_days[31];
 HWND labels_of_menus [MAX_MENUS][MAX_LABELS_BY_MENU];
 HWND buttons_of_menus [MAX_MENUS][MAX_BUTTONS_BY_MENU];
-HWND buttons_of_schedules [MAX_SCHEDULES];
+HWND buttons_of_schedules [MAX_SCHEDULES]; HWND combo_box_schedules;
 COLORREF colors_of_the_buttons [MAX_BUTTONS_BY_MENU];
-HWND days_combo_box, months_combo_box, year_combo_box;
+HWND months_combo_box, year_combo_box;
 
 
 // menu control
@@ -50,12 +50,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             create_buttons_days(hwnd, buttons_of_the_days);
             create_buttons_schedules(hwnd, buttons_of_schedules);
 
-            create_combo_boxes(hwnd, days_combo_box, months_combo_box, year_combo_box);
+            create_combo_boxes(hwnd, months_combo_box, year_combo_box, &GUI);
+
+            // getting the starting available schedules
+            ls((char*)(SCHEDULES_PATH), available_schedules, ".txt");
+            create_combo_box(hwnd, combo_box_schedules, available_schedules, 300, 200, 100, 50, 303, 0);
+            
 
             break;
-
+    
         case WM_COMMAND:
+
+            printf("\nLoword is: %d", LOWORD(wParam));
         
+            
+
             switch (LOWORD(wParam))
             {
                 case DELETE_SCHEDULE: 
@@ -94,27 +103,52 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         sprintf(message_str, "Day %d clicked", LOWORD(wParam) - 100 + 1);
                         MessageBox(hwnd, message_str, "Button Clicked", MB_OK);
                         
-                    } else if ((LOWORD(wParam) < 300))
+                    } else if (LOWORD(wParam) < 300) // ID'S FOR COMBO BOXES
                     {
-                        printf("\nloword: %d", (int)(LOWORD(wParam)));
-                    
-                        if (LOWORD(wParam) == CMB_BOX_DAYS_ID && HIWORD(wParam) == CBN_SELCHANGE) {
-                        // Combo box selection changed
-                        HWND comboBox = GetDlgItem(hwnd, 1);
+                        if (HIWORD(wParam) == CBN_SELCHANGE)
+                        {
+                            if (LOWORD(wParam) == CMB_BOX_MONTHS_ID)
+                            {
+                                // Combo box selection changed
+                                months_combo_box = GetDlgItem(hwnd, CMB_BOX_MONTHS_ID);
 
-                        // Get the index of the selected item
-                        int selectedIndex = SendMessage(comboBox, CB_GETCURSEL, 0, 0);
+                                // Get the index of the selected item
+                                int selectedIndex = SendMessage(months_combo_box, CB_GETCURSEL, 0, 0);
 
-                        // Get the text of the selected item
-                        char buffer[256];
-                        SendMessage(comboBox, CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
+                                // Get the text of the selected item
+                                char buffer[256];
+                                SendMessage(months_combo_box, CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
 
-                        // Display the selected item
-                        MessageBox(hwnd, buffer, "Selected Item", MB_OK);
-                    }
+                                // Display the selected item
+                                // MessageBox(hwnd, buffer, "Selected Item", MB_OK);
+                                GUI.showing_date.month = atoi(buffer);
+
+                            } else if (LOWORD(wParam) == CMB_BOX_YEARS_ID) 
+                            {
+                                // Combo box selection changed
+                                year_combo_box = GetDlgItem(hwnd, CMB_BOX_YEARS_ID);
+
+                                // Get the index of the selected item
+                                int selectedIndex = SendMessage(year_combo_box, CB_GETCURSEL, 0, 0);
+
+                                // Get the text of the selected item
+                                char buffer[256];
+                                SendMessage(year_combo_box, CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
+
+                                // Display the selected item
+                                // MessageBox(hwnd, buffer, "Selected Item", MB_OK);
+                                GUI.showing_date.year = atoi(buffer);
+                            }
+
+                
+                            get_events_by(full_events_list, GUI.showing_date.year, GUI.showing_date.month, -1, events_of_the_month);
                         
+                            make_visible_buttons_days(hwnd, buttons_of_the_days);
+                            paint_day_buttons (hwnd, buttons_of_the_days, events_of_the_month, colors_of_the_buttons);
+                        }
                     }
-
+                    break;
+                        
             }
             break;
 
@@ -173,12 +207,11 @@ int main()
     get_exe_path((char*)MAIN_EXE_PATH);
     sprintf((char*)SCHEDULES_PATH, "%s%s", (char*)MAIN_EXE_PATH, MAIN_EXE_TO_SCH_REL_PATH);
 
-    // ############################################
-    // BY DEFAULT WE WILL SET DE GUI DATE SHOWING AS 10/2023 UNTIL THE DATE
-    // CAN BE OBTANINED BY THE LOCAL TIME
-    // ############################################
-    GUI.showing_date.year = 2023;
-    GUI.showing_date.month = 10;
+    put_centinela_event(&full_events_list[0]);
+    put_centinela_event(&events_of_the_month[0]);
+    
+    // default date starting values for combo boxes
+    get_local_time(&GUI.showing_date);
 
     WNDCLASS wc = {0};
     wc.lpfnWndProc = WndProc;

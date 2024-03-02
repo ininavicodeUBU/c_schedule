@@ -7,5 +7,6 @@
         "constants.h": "c",
         "gui_constants.h": "c"
     },
-    "makefile.makefilePath": ""
+    "makefile.makefilePath": "./",
+    "makefile.makePath": ""
 }

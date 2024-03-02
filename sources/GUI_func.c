@@ -115,46 +115,37 @@ void create_buttons_schedules (HWND hwnd, HWND buttons_of_schedules [])
     }
 }
 
-void create_combo_boxes (HWND hwnd, HWND days_combo_box, HWND months_combo_box, HWND year_combo_box)
+void create_combo_boxes (HWND hwnd, HWND months_combo_box, HWND year_combo_box, GUI_t *GUI)
 {
-    char combo_box_options[31][10];
-
-    // combo box for days
-    for (int i = 0; i < 31; i++)
-        sprintf((char*)combo_box_options[i], "%d", i + 1);
-
-    combo_box_options[31][0] = '\0';
-    create_combo_box(hwnd, days_combo_box, combo_box_options,
-    CMB_BOX_DAYS_LEFT_MARGIN,
-    CMB_BOX_DAYS_TOP_MARGIN, CMB_BOX_DAYS_WIDTH, CMB_BOX_DAYS_HEIGHT, CMB_BOX_DAYS_ID);
+    char combo_box_options[41][256];
 
     // combo box for moths
     for (int i = 0; i < 12; i++)
-        sprintf((char*)combo_box_options[i], "%d", i + 1);
+        sprintf(combo_box_options[i], "%d", i + 1);
 
     combo_box_options[12][0] = '\0';
     create_combo_box(hwnd, months_combo_box, combo_box_options,
     CMB_BOX_MONTHS_LEFT_MARGIN,
-    CMB_BOX_MONTHS_TOP_MARGIN, CMB_BOX_MONTHS_WIDTH, CMB_BOX_MONTHS_HEIGHT, CMB_BOX_MONTHS_ID);
+    CMB_BOX_MONTHS_TOP_MARGIN, CMB_BOX_MONTHS_WIDTH, CMB_BOX_MONTHS_HEIGHT, CMB_BOX_MONTHS_ID, GUI->showing_date.month - 1);
 
     // combo box for days
     for (int i = 0; i < 40; i++)
-        sprintf((char*)combo_box_options[i], "%d", 2022 + i);
+        sprintf(combo_box_options[i], "%d", 2022 + i);
 
     combo_box_options[40][0] = '\0';
     create_combo_box(hwnd, year_combo_box, combo_box_options,
     CMB_BOX_YEARS_LEFT_MARGIN,
-    CMB_BOX_YEARS_TOP_MARGIN, CMB_BOX_YEARS_WIDTH, CMB_BOX_YEARS_HEIGHT, CMB_BOX_YEARS_ID);
+    CMB_BOX_YEARS_TOP_MARGIN, CMB_BOX_YEARS_WIDTH, CMB_BOX_YEARS_HEIGHT, CMB_BOX_YEARS_ID, GUI->showing_date.year - 2022);
 }
 
-void create_combo_box (HWND hwnd, HWND combo_box, char options[][10], unsigned left_margin,
-unsigned top_margin, unsigned width, unsigned height, int combo_box_ID) // options ends with options[n][0] 
+void create_combo_box (HWND hwnd, HWND combo_box, char options[][256], unsigned left_margin,
+unsigned top_margin, unsigned width, unsigned height, int combo_box_ID, int default_option) // options ends with options[n][0] 
 {
     // Crear la casilla desplegable (combobox)
     combo_box = CreateWindow(
         "COMBOBOX",
         NULL,
-        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
         left_margin, top_margin, width,
         height,
         hwnd,
@@ -172,7 +163,7 @@ unsigned top_margin, unsigned width, unsigned height, int combo_box_ID) // optio
     }
 
     // Establecer el primer elemento como seleccionado por defecto
-    SendMessage(combo_box, CB_SETCURSEL, 0, 0);
+    SendMessage(combo_box, CB_SETCURSEL, default_option, 0);
 }
 // -----------------------------------------------------
 
@@ -196,6 +187,10 @@ void paint_day_buttons (HWND hwnd, HWND list_of_buttons [], date_event_t events_
         
         i++;
     }
+
+    
+    
+
 }
 
 void make_visible_buttons_days (HWND hwnd, HWND buttons_of_the_days [])
