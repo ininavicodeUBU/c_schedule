@@ -9,11 +9,18 @@ Compilation arguments for GUI functions:
 
 <hr style="border-color: violet;">
 #### ![[code_flow_01.excalidraw#^u8rmEdtL]]
-<div style="background-color: rgba(192, 87, 223, 0.225); border-radius: 10px; padding-left: 10px; white-space: pre;">Creation of all static objects and global variables 
-(only the objects that are always on the same place):
-1. Buttons (New schedule / Delete schedule)
-2. Combo boxes (Schedule selection, Month, Year)
-3. Input boxes (Any at the start)
+<div style="background-color: rgba(192, 87, 223, 0.225); border-radius: 10px; padding-left: 10px; white-space: pre;">Procedures to do:
+	- Get&Save the .exe file path
+	- Get&Save the path for the schedules folder
+	- Get&Save the available schedules
+
+	- Create all the elements of the GUI (hide all)
+	- Show the elements of the no schedule selected menu (and set
+		its default values)
+
+	- Get the local time and save it on the showing date
+
+	- Set the menu state to the correct
 </div>
 
 <hr style="border-color: violet;">
@@ -106,6 +113,13 @@ uint8_t menu_state[MENU_STATE_LEN];
 - Text: *"Date:"* before the *Combo box* of the date
 - Text: *"Description:"* on top of the *Input box* of the description
 
+#### Windows screen
+This is the main screen of the program, so to add any element to the screen we have to tell to the screen to do it (more or less).
+
+```C
+HWND GUI_main_screen;
+```
+
 #### Structures to save the elements of the GUI
 ```C
 // 31 days of the month + 4 other buttons
@@ -114,9 +128,137 @@ HWND buttons[N_BUTTONS];
 
 // 4 others + MAX_DISPLAYING_EVENTS * 5 (each events has 5 combo boxes)
 #define N_COMBO_BOXES 4 + MAX_DISPLAYING_EVENTS * 5
-HWND combo_boxes[N_COMBO_BOXES]
+HWND combo_boxes[N_COMBO_BOXES];
 
 // name input for the new scheudle creation + MAX_DISPLAYING_EVENTS
 #define N_INPUT_BOXES 1 + MAX_DISPLAYING_EVENTS
-HWND text_input_boxes[N_INPUT_BOXES]
+HWND text_input_boxes[N_INPUT_BOXES];
+
+#define N_TEXTS 4
+HWND text[N_TEXTS];
 ```
+
+#### Other important variables
+
+##### Local time
+We will save that date to keep it there constant,it will be necessary to actualize the combo boxes relatively to this time
+
+```C
+date_t local_time_date;
+```
+
+##### Showing date
+Here will be stored the actual Month/Year for the showing days,
+and the selected day to visualize it's events.
+
+```C
+// this data_type is defined on func.h
+date_t showing_date;
+```
+
+##### Path to the .exe file
+Unfortunately it's necessary to get our paths relatively from the .exe path.
+If the user executes the program from a folder different from the .exe file, all the paths of the program will be wrong, so it's necessary to set a base path to get the other paths from there.
+
+We will use this variable type for more data so we create a data_type.
+
+```C
+#define SCHEDULE_PATH_MAX_LEN (defined on func.h)
+typedef char path_t [SCHEDULE_PATH_MAX_LEN];
+
+path_t exe_file_path;
+```
+##### Folder for the schedules
+This variable stores the path of the folder where all the schedules are stored.
+
+```C
+// variable to store the path for the folder of the schedules
+path_t schedules_folder_path;
+```
+
+##### Actual selected schedule
+This variable stores the path for the selected schedule
+
+```C
+path_t selected_schedule_path;
+```
+
+##### Available schedules to select
+This variable stores **names** and not the **paths** of the available schedules.
+For this we will create a data_type because is a list of strings.
+
+```C
+// MAX_FILENAME_LEN defined on constants.h
+typedef char* names_of_available_schedules_t [MAX_FILENAME_LEN];
+
+names_of_available_schedules_t names_of_available_schedules;
+```
+##### Last downloaded events
+Here will be stored the events from the selected schedule.
+The data type of an event is already defined on **func.h**
+
+```C
+// date_event_t already defined on func.h
+date_event_t last_downloaded_events[MAX_EVENTS];
+```
+
+##### Events of the showing date
+There are the filtered last_downloaded_events by the showing date.
+
+```C
+date_event_t events_of_showing_date[MAX_EVENTS];
+```
+
+
+> [!warning] Adding dynamic colors to the buttons of the months
+> For problems on the arhitechture of the windows API we have to save the colors of the buttons to assignate these on the painting call
+
+```C
+// for each color change we have to save that change here
+unsigned colors_of_buttons[N_BUTTONS];
+```
+
+> [!important] Conclusion for the data structure
+> All the data has to be accessible to every function, but it is
+> not so eficient to add every object as a parameter for each function.
+> So the decision is to get all this data in a struct that stores all the necessary data for anything
+
+```C
+typedef struct
+{
+	// GUI elements +++++++++++++++++++++
+	HWND GUI_main_screen;
+	HWND buttons[N_BUTTONS];
+	HWND combo_boxes[N_COMBO_BOXES];
+	HWND text_input_boxes[N_INPUT_BOXES];
+	HWND text[N_TEXTS];
+	// -----------------------------------
+	// STYLING variables +++++++++++++++++
+	// for each color change we have to save that change here
+	unsigned colors_of_buttons[N_BUTTONS];
+	// -----------------------------------
+	// menu management variables +++++++++
+	uint8_t menu_state[MENU_STATE_LEN];
+	// -----------------------------------
+	// dates ++++++++++++++++++++++
+	date_t local_time_date;
+	date_t showing_date;
+	// -----------------------------------
+	// PATHS +++++++++++++++++++++++++++++
+	// path to the .exe file
+	path_t exe_file_path;
+	// path for the folder where the schedules are stored
+	path_t schedules_folder_path;
+	// selected schedule path
+	path_t schedules_folder_path;
+	// -----------------------------------
+	// list of events of the selected schedule
+	date_event_t last_downloaded_events[MAX_EVENTS];
+	
+	date_event_t events_of_showing_date[MAX_EVENTS];
+	// -----------------------------------
+
+} GUI_data_t;
+```
+
+

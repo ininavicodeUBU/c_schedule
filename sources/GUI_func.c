@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include "../include/GUI_func.h"
+#include "../include/GUI_constants.h"
 
 
 // Function to set the background color of the "New Schedule" button
@@ -19,189 +20,289 @@ void DrawCustomButton(LPDRAWITEMSTRUCT lpdis, COLORREF bgColor, char text[])
 }
 
 
-
 // initialization +++++++++++++++++++++++++++++++++++++++
-void create_buttons_days (HWND hwnd, HWND buttons_of_the_days [])
+void GUI_init (GUI_data_t* GUI_data)
 {
-    for (int i = 0; i < 31; ++i)
-    {
-        char button_text [3];
-        sprintf(button_text, "%d", (i + 1));
-        buttons_of_the_days[i] = CreateWindow(
-            "BUTTON",
-            button_text,
-            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
-            DAY_BUTTONS_LEFT_MARGIN + (i % 7) * DAY_BUTTONS_WIDTH,
-            DAY_BUTTONS_TOP_MARGIN + (int)(i / 7) * DAY_BUTTONS_HEIGHT,
-            DAY_BUTTONS_WIDTH, DAY_BUTTONS_HEIGHT,
-            hwnd,
-            (HMENU)(i + 100), // buttons will start on 100
-            (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
-            NULL);
+    // .exe path
+    get_exe_path((char*)GUI_data->exe_file_path);
 
-            // initialy all the days are not visible
-            ShowWindow(buttons_of_the_days[i], SW_HIDE);
+    // get schedules folder
+    sprintf(GUI_data->schedules_folder_path, "%s%s", GUI_data->exe_file_path, MAIN_EXE_TO_SCH_REL_PATH);
 
-    }
+    // available schedules
+    ls(GUI_data->schedules_folder_path, GUI_data->names_of_available_schedules, ".txt");
 
-}
+    // save the local time to get that showing date by default
+    get_local_time(&GUI_data->local_time_date);
+    get_local_time(&GUI_data->showing_date);
 
-void create_buttons_schedules (HWND hwnd, HWND buttons_of_schedules [])
-{
+    // initializing variables
+    put_centinela_event(&GUI_data->last_downloaded_events[0]);
+    put_centinela_event(&GUI_data->events_of_showing_date[0]);
 
-    // creating the buttons for the available schedules
-    const char SCHEDULES_PATH[MAX_PATH_LEN + MAX_FILENAME_LEN];
-    const char MAIN_EXE_PATH[MAX_PATH_LEN];
+    // menu state
+    GUI_data->menu_state[0] = NO_SCHEDULE_SELECTED;
 
-    get_exe_path((char*)MAIN_EXE_PATH);
-    sprintf((char*)SCHEDULES_PATH, "%s%s", (char*)MAIN_EXE_PATH, MAIN_EXE_TO_SCH_REL_PATH);
+
+    // generating GUI elements +++++++++++++++++++++++++
+    // main screen
+    GUI_data->GUI_main_screen = CreateWindowEx(
+        0,
+        "MyWindowClass",
+        "Windows Scheduler",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
+        NULL, NULL, GetModuleHandle(NULL), NULL);
+
+    ShowWindow(GUI_data->GUI_main_screen, SW_SHOWDEFAULT);
+    UpdateWindow(GUI_data->GUI_main_screen);
+
+    // generating buttons
+    GUI_data->buttons[ID_NEW_SCHEDULE_BUTTON] = CreateWindow(
+        "BUTTON",
+        "New Schedule",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+        10, 10, 120, 30,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_NEW_SCHEDULE_BUTTON, // Button ID
+        (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
+        NULL);
+    SetButtonBackgroundColor(GUI_data->buttons[ID_NEW_SCHEDULE_BUTTON], RGB_NEW_SCHEDULE_BUTTON);
+    GUI_data->colors_of_buttons[ID_NEW_SCHEDULE_BUTTON] = RGB_NEW_SCHEDULE_BUTTON;
+
+    GUI_data->buttons[ID_SAVE_SELECTED_SCHEDULE] = CreateWindow(
+        "BUTTON",
+        "S",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+        X_SAVE_SELECTED_SCHEDULE, Y_SAVE_SELECTED_SCHEDULE, WIDTH_SAVE_SELECTED_SCHEDULE, HEIGTH_SAVE_SELECTED_SCHEDULE,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_SAVE_SELECTED_SCHEDULE, // Button ID
+        (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
+        NULL);
+    SetButtonBackgroundColor(GUI_data->buttons[ID_SAVE_SELECTED_SCHEDULE], RGB_SAVE_SELECTED_SCHEDULE);
+    GUI_data->colors_of_buttons[ID_SAVE_SELECTED_SCHEDULE] = RGB_SAVE_SELECTED_SCHEDULE;
     
-    date_event_t event_list[MAX_EVENTS];
-    // select the schedule file
-    char available_schedules[MAX_SCHEDULES][MAX_FILENAME_LEN];
 
-    ls((char*)(SCHEDULES_PATH), available_schedules, ".txt");
+    GUI_data->buttons[ID_SAVE_NEW_SCHEDULE_NAME] = CreateWindow(
+        "BUTTON",
+        "Save",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+        10, 10, 120, 30,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_SAVE_NEW_SCHEDULE_NAME, // Button ID
+        (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
+        NULL);
+    SetButtonBackgroundColor(GUI_data->buttons[ID_SAVE_NEW_SCHEDULE_NAME], RGB_SAVE_NEW_SCHEDULE_NAME);
+    GUI_data->colors_of_buttons[ID_SAVE_NEW_SCHEDULE_NAME] = RGB_SAVE_NEW_SCHEDULE_NAME;
 
-    // new schedule button
-    buttons_of_schedules[NEW_SCHEDULE] = CreateWindow(
-            "BUTTON",
-            "New Schedule",
-            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-            NEW_SCH_BUTTONS_LEFT_MARGIN,
-            NEW_SCH_BUTTONS_TOP_MARGIN,
-            NEW_SCH_BUTTONS_WIDTH, NEW_SCH_BUTTONS_HEIGHT,
-            hwnd,
-            (HMENU)(NEW_SCHEDULE),
-            (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
-            NULL);
+    GUI_data->buttons[ID_CANCEL_NEW_SCHEDULE_NAME] = CreateWindow(
+        "BUTTON",
+        "Save",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+        10, 10, 120, 30,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_CANCEL_NEW_SCHEDULE_NAME, // Button ID
+        (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
+        NULL);
+    SetButtonBackgroundColor(GUI_data->buttons[ID_CANCEL_NEW_SCHEDULE_NAME], RGB_CANCEL_NEW_SCHEDULE_NAME);
+    GUI_data->colors_of_buttons[ID_CANCEL_NEW_SCHEDULE_NAME] = RGB_CANCEL_NEW_SCHEDULE_NAME;
 
-    SetButtonBackgroundColor(buttons_of_schedules[NEW_SCHEDULE], RGB(109, 240, 131));
-
-    // delete schedule button
-    buttons_of_schedules[DELETE_SCHEDULE] = CreateWindow(
-            "BUTTON",
-            "Delete Schedule",
-            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-            DEL_SCH_BUTTONS_LEFT_MARGIN,
-            DEL_SCH_BUTTONS_TOP_MARGIN,
-            DEL_SCH_BUTTONS_WIDTH, DEL_SCH_BUTTONS_HEIGHT,
-            hwnd,
-            (HMENU)(DELETE_SCHEDULE),
-            (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
-            NULL);
-
-    SetButtonBackgroundColor(buttons_of_schedules[DELETE_SCHEDULE], RGB(202, 65, 65));
-
-    // delete schedule button
-
-    int i = 0;
-    while ((available_schedules[i][0] != '\0') && (i < USHRT_MAX))
+    for (int i = 0; i <= 30; i++) // 31 DAYS of the month (max)
     {
-        
-        buttons_of_schedules[i] = CreateWindow(
+        char name_of_button[3];
+        sprintf(name_of_button, "%d", i + 1);
+        GUI_data->buttons[i + ID_FIRST_DAY_OF_MONTH] = CreateWindow(
             "BUTTON",
-            available_schedules[i],
-            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-            SCH_BUTTONS_LEFT_MARGIN,
-            SCH_BUTTONS_TOP_MARGIN + (i * SCH_BUTTONS_HEIGHT),
-            SCH_BUTTONS_WIDTH, SCH_BUTTONS_HEIGHT,
-            hwnd,
-            (HMENU)(i + 2), // the button it of each schedule has an offset of +2
-            (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
+            name_of_button,
+            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+            X_FIRST_DAY_OF_MONTH + (i % 7) * WIDTH_FIRST_DAY_OF_MONTH,
+            Y_FIRST_DAY_OF_MONTH + (int)(i / 7) * HEIGTH_FIRST_DAY_OF_MONTH, WIDTH_FIRST_DAY_OF_MONTH, HEIGTH_FIRST_DAY_OF_MONTH,
+            GUI_data->GUI_main_screen,
+            (HMENU)(i + ID_FIRST_DAY_OF_MONTH),
+            (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
             NULL);
-
-            i++;
-
     }
-}
 
-void create_combo_boxes (HWND hwnd, HWND months_combo_box, HWND year_combo_box, GUI_t *GUI)
-{
-    char combo_box_options[41][256];
-
-    // combo box for moths
-    for (int i = 0; i < 12; i++)
-        sprintf(combo_box_options[i], "%d", i + 1);
-
-    combo_box_options[12][0] = '\0';
-    create_combo_box(hwnd, months_combo_box, combo_box_options,
-    CMB_BOX_MONTHS_LEFT_MARGIN,
-    CMB_BOX_MONTHS_TOP_MARGIN, CMB_BOX_MONTHS_WIDTH, CMB_BOX_MONTHS_HEIGHT, CMB_BOX_MONTHS_ID, GUI->showing_date.month - 1);
-
-    // combo box for days
-    for (int i = 0; i < 40; i++)
-        sprintf(combo_box_options[i], "%d", 2022 + i);
-
-    combo_box_options[40][0] = '\0';
-    create_combo_box(hwnd, year_combo_box, combo_box_options,
-    CMB_BOX_YEARS_LEFT_MARGIN,
-    CMB_BOX_YEARS_TOP_MARGIN, CMB_BOX_YEARS_WIDTH, CMB_BOX_YEARS_HEIGHT, CMB_BOX_YEARS_ID, GUI->showing_date.year - 2022);
-}
-
-void create_combo_box (HWND hwnd, HWND combo_box, char options[][256], unsigned left_margin,
-unsigned top_margin, unsigned width, unsigned height, int combo_box_ID, int default_option) // options ends with options[n][0] 
-{
-    // Crear la casilla desplegable (combobox)
-    combo_box = CreateWindow(
+   
+    
+    // generating combo boxes
+    GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET] = CreateWindow(
         "COMBOBOX",
         NULL,
         CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
-        left_margin, top_margin, width,
-        height,
-        hwnd,
-        (HMENU)combo_box_ID,
+        X_DELETE_SCHEDULE_CBX, Y_DELETE_SCHEDULE_CBX, WIDTH_DELETE_SCHEDULE_CBX, HEIGTH_DELETE_SCHEDULE_CBX,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_DELETE_SCHEDULE_CBX, // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+    
+    GUI_data->combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X_SELECT_SCHEDULE_CBX, Y_SELECT_SCHEDULE_CBX, WIDTH_SELECT_SCHEDULE_CBX, HEIGTH_SELECT_SCHEDULE_CBX,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_SELECT_SCHEDULE_CBX, // Button ID
         GetModuleHandle(NULL),
         NULL);
 
-    // Agregar números del 1 al 12 al combobox
-    int i = 0;
-    while (options[i][0] != '\0')
+    GUI_data->combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X_MONTH_SHOWING_DATE_CBX, Y_MONTH_SHOWING_DATE_CBX, WIDTH_MONTH_SHOWING_DATE_CBX, HEIGTH_MONTH_SHOWING_DATE_CBX,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_MONTH_SHOWING_DATE_CBX, // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+
+    GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X_YEAR_SHOWING_DATE_CBX, Y_YEAR_SHOWING_DATE_CBX, WIDTH_YEAR_SHOWING_DATE_CBX, HEIGTH_YEAR_SHOWING_DATE_CBX,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_YEAR_SHOWING_DATE_CBX, // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // adding options to combo boxes
+    refresh_available_schedules_combo_boxes(GUI_data);
+    const char months_list[12][10] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+    for (int i = 0; i < 12; i++)
+        SendMessage(GUI_data->combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_ADDSTRING, 0, (LPARAM)months_list[i]);
+    
+    for (int i = 0; i < 30; i++) // will be displaying 30 years from the local date - 1
     {
-        // Agregar el elemento al combobox
-        SendMessage(combo_box, CB_ADDSTRING, 0, (LPARAM)options[i]);
-        i++;
+        char year_to_str[5];
+        sprintf(year_to_str, "%d", i + GUI_data->showing_date.year - 1);
+        SendMessage(GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_ADDSTRING, 0, (LPARAM)year_to_str);
     }
 
-    // Establecer el primer elemento como seleccionado por defecto
-    SendMessage(combo_box, CB_SETCURSEL, default_option, 0);
+    // adding the default date by the local time
+    SendMessage(GUI_data->combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_SETCURSEL, GUI_data->showing_date.month - 1, 0); 
+    SendMessage(GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_SETCURSEL,  1, 0); 
+    // -------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // hiding elements ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ShowWindow(GUI_data->buttons[ID_SAVE_SELECTED_SCHEDULE], false);
+
+    ShowWindow(GUI_data->buttons[ID_SAVE_NEW_SCHEDULE_NAME], false);
+    ShowWindow(GUI_data->buttons[ID_CANCEL_NEW_SCHEDULE_NAME], false);
+
+    ShowWindow(GUI_data->combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], false);
+    ShowWindow(GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], false);
+
+    for (int i = ID_FIRST_DAY_OF_MONTH; i <= ID_LAST_DAY_OF_MONTH; i++)
+        ShowWindow(GUI_data->buttons[i], false);
+    
+    // -------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // showing elements
+    show_no_schedule_selected_menu(GUI_data);
+
 }
+
 // -----------------------------------------------------
 
-// buttons management ++++++++++++++++++++++++++++
-void paint_day_buttons (HWND hwnd, HWND list_of_buttons [], date_event_t events_of_month[], COLORREF list_of_the_color_button [])
+// hiding elements +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void hide_no_schedule_selected_menu (GUI_data_t* GUI_data)
+{
+    // hiding the combo boxes that does not participate on the <no selected schedule> menu
+    ShowWindow(GUI_data->buttons[ID_NEW_SCHEDULE_BUTTON], false);
+    ShowWindow(GUI_data->combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], false);
+    ShowWindow(GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], false);
+}
+
+void hide_selected_schedule_menu (GUI_data_t* GUI_data)
+{
+    ShowWindow(GUI_data->buttons[ID_SAVE_SELECTED_SCHEDULE], false);
+
+    for (int i = ID_FIRST_DAY_OF_MONTH; i <= ID_LAST_DAY_OF_MONTH; i++)
+        ShowWindow(GUI_data->buttons[i], false);
+
+    ShowWindow(GUI_data->combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], false);
+    ShowWindow(GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], false);
+    
+}
+// -------------------------------------------------------------------------------------------
+
+// showing elements +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void show_date_showing_combo_boxes (GUI_data_t* GUI_data)
+{
+    ShowWindow(GUI_data->combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], true);
+    ShowWindow(GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], true);
+}
+
+void show_days_of_selected_showing_date (GUI_data_t* GUI_data)
+{
+    int MONTH_DAYS[12] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    for (int i = ID_FIRST_DAY_OF_MONTH; i < ID_FIRST_DAY_OF_MONTH + MONTH_DAYS[GUI_data->showing_date.month - 1]; i++)
+        ShowWindow(GUI_data->buttons[i], true);
+
+}
+
+void show_save_button (GUI_data_t* GUI_data)
+{
+    ShowWindow(GUI_data->buttons[ID_SAVE_SELECTED_SCHEDULE], true);
+
+}
+
+void show_no_schedule_selected_menu (GUI_data_t* GUI_data)
+{
+
+    // hiding the combo boxes that does not participate on the <no selected schedule> menu
+    ShowWindow(GUI_data->buttons[ID_NEW_SCHEDULE_BUTTON], true);
+    ShowWindow(GUI_data->combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], true);
+    ShowWindow(GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], true);
+
+}
+// -------------------------------------------------------------------------------------------
+
+// refreshing ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void refresh_available_schedules_combo_boxes (GUI_data_t* GUI_data)
+{
+    // reset the content of combo boxes
+    SendMessage(GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_RESETCONTENT, 0, 0);
+    SendMessage(GUI_data->combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_RESETCONTENT, 0, 0);
+
+    SendMessage(GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_ADDSTRING, 0, (LPARAM)"None");
+    SendMessage(GUI_data->combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_ADDSTRING, 0, (LPARAM)"None");
+
+    SendMessage(GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_SETCURSEL, 0, 0); // sets the default option on "None"
+    SendMessage(GUI_data->combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_SETCURSEL, 0, 0); // sets the default option on "None"
+
+
+    for (int i = 0; GUI_data->names_of_available_schedules[i][0] != '\0'; i++)
+    {
+        SendMessage(GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_ADDSTRING, 0, (LPARAM)GUI_data->names_of_available_schedules[i]);
+        SendMessage(GUI_data->combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_ADDSTRING, 0, (LPARAM)GUI_data->names_of_available_schedules[i]);
+    }
+}
+// -------------------------------------------------------------------------------------------
+
+// painting ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void paint_days_to_default_color (GUI_data_t* GUI_data)
+{
+    for (int i = 0; i <= 30; i++) // 31 DAYS of the month (max)
+    {
+        SetButtonBackgroundColor(GUI_data->buttons[i + ID_FIRST_DAY_OF_MONTH], RGB_DEFAULT_DAY);
+        GUI_data->colors_of_buttons[i + ID_FIRST_DAY_OF_MONTH] = RGB_DEFAULT_DAY;
+    }
+}
+
+void paint_days_with_events (GUI_data_t* GUI_data)
 {
     int i = 0;
-    while (i < 31) // reset all the buttons to its default color
+    while (!end_of_event_list(GUI_data->events_of_showing_date[i]))
     {
-        list_of_the_color_button[i] = RGB(156, 156, 156);
-        SetButtonBackgroundColor(list_of_buttons[events_of_month[i].date.day - 1], RGB(156, 156, 156));
+        SetButtonBackgroundColor(GUI_data->buttons[GUI_data->events_of_showing_date[i].date.day + ID_FIRST_DAY_OF_MONTH - 1], RGB_DAY_WITH_EVENT);
+        GUI_data->colors_of_buttons[GUI_data->events_of_showing_date[i].date.day + ID_FIRST_DAY_OF_MONTH - 1] = RGB_DAY_WITH_EVENT;
         i++;
     }
-
-    i = 0;
-    while (!end_of_event_list(events_of_month[i]))
-    {
-        list_of_the_color_button[events_of_month[i].date.day - 1] = RGB(109, 123, 240);
-        // printf("\nSetting to blue %d at day %d", i, events_of_month[i].date.day);
-        SetButtonBackgroundColor(list_of_buttons[events_of_month[i].date.day - 1], RGB(109, 123, 240));
-        
-        i++;
-    }
-
     
-    
-
 }
 
-void make_visible_buttons_days (HWND hwnd, HWND buttons_of_the_days [])
-{
-    for (int i = 0; i < 31; ++i)
-    {
-
-        ShowWindow(buttons_of_the_days[i], SW_NORMAL);
-
-    }
-
-}
-
-// -----------------------------------------------------
+// ---------------------------------------------------------------------------------------------
