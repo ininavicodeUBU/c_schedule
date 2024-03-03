@@ -42,6 +42,7 @@ void GUI_init (GUI_data_t* GUI_data)
 
     // menu state
     GUI_data->menu_state[0] = NO_SCHEDULE_SELECTED;
+    GUI_data->menu_state[1] = UNDEFINED_MENU_STATE;
 
 
     // generating GUI elements +++++++++++++++++++++++++
@@ -305,4 +306,9 @@ void paint_days_with_events (GUI_data_t* GUI_data)
     
 }
 
+void paint_selected_day (GUI_data_t* GUI_data)
+{
+    GUI_data->colors_of_buttons[GUI_data->showing_date.day + ID_FIRST_DAY_OF_MONTH - 1] = RGB_DAY_SELECTED;
+    SetButtonBackgroundColor(GUI_data->buttons[GUI_data->showing_date.day + ID_FIRST_DAY_OF_MONTH - 1], RGB_DAY_SELECTED);
+}
 // ---------------------------------------------------------------------------------------------

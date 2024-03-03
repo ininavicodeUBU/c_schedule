@@ -104,6 +104,8 @@ void paint_days_to_default_color (GUI_data_t* GUI_data);
 
 void paint_days_with_events (GUI_data_t* GUI_data);
 
+void paint_selected_day (GUI_data_t* GUI_data);
+
 // ---------------------------------------------------------------------------------------------
 
 #endif

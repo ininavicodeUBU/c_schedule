@@ -19,6 +19,10 @@
 #define NO_SCHEDULE_SELECTED 0
 #define SCHEDULE_SELECTED 1
 
+// [1]
+#define UNDEFINED_MENU_STATE 0
+#define DAY_SELECTED 1
+
 // ---------------------------------------------------------------------------
 
 /*
@@ -55,6 +59,7 @@ RANGES FOR THE ID'S
 #define RGB_SAVE_SELECTED_SCHEDULE RGB(87, 155, 18)
 #define RGB_DEFAULT_DAY RGB(179, 183, 183)
 #define RGB_DAY_WITH_EVENT RGB(140, 122, 255)
+#define RGB_DAY_SELECTED RGB(131, 255, 122)
 
 // POSITION AND SIZE
 #define X_NEW_SCHEDULE_BUTTON 10

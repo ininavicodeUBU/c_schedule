@@ -33,12 +33,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     
         case WM_COMMAND:
 
-            // combo boxes ++++++++++++++++++++++++++++
+            // combo boxes +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             if (HIWORD(wParam) == CBN_SELCHANGE) {
 
+                // NO SCHEDULE SELECTED MENU
                 // select/delete schedule combo box
                 if (GUI_data.menu_state[0] == NO_SCHEDULE_SELECTED)
                 {
+                    // user selects an schedule
                     if (LOWORD(wParam) == ID_SELECT_SCHEDULE_CBX)
                     {
                         // update the menu state
@@ -125,50 +127,64 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 }
                 
+                // SCHEDULE SELECTED MENU ,undefined state
                 // user changes the showing date
                 else if (GUI_data.menu_state[0] == SCHEDULE_SELECTED)
                 {
-                    if (LOWORD(wParam) == ID_MONTH_SHOWING_DATE_CBX)
+                    // actualize the available schedules for the new month/year selected
+                    // no matters the [1]] of the menu state
+                    if (LOWORD(wParam) == ID_MONTH_SHOWING_DATE_CBX || LOWORD(wParam) == ID_YEAR_SHOWING_DATE_CBX)
                     {
-                        // Combo box selection changed
-                        GUI_data.combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET] = GetDlgItem(hwnd, ID_MONTH_SHOWING_DATE_CBX);
+                        // changes the month
+                        if (LOWORD(wParam) == ID_MONTH_SHOWING_DATE_CBX)
+                        {
+                            // Combo box selection changed
+                            GUI_data.combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET] = GetDlgItem(hwnd, ID_MONTH_SHOWING_DATE_CBX);
 
-                        // Get the index of the selected item
-                        int selectedIndex = SendMessage(GUI_data.combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_GETCURSEL, 0, 0);
+                            // Get the index of the selected item
+                            int selectedIndex = SendMessage(GUI_data.combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_GETCURSEL, 0, 0);
 
-                        // Get the text of the selected item
-                        char buffer[256];
-                        SendMessage(GUI_data.combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
+                            // Get the text of the selected item
+                            char buffer[256];
+                            SendMessage(GUI_data.combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
 
-                        // update the changes to the variables
-                        GUI_data.showing_date.month = selectedIndex + 1;
+                            // update the changes to the variables
+                            GUI_data.showing_date.month = selectedIndex + 1;
 
-                    } else if (LOWORD(wParam) == ID_YEAR_SHOWING_DATE_CBX)
-                    {
-                        // Combo box selection changed
-                        GUI_data.combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET] = GetDlgItem(hwnd, ID_YEAR_SHOWING_DATE_CBX);
+                        }
+                        
+                        // changes the year
+                        else if (LOWORD(wParam) == ID_YEAR_SHOWING_DATE_CBX)
+                        {
+                            // Combo box selection changed
+                            GUI_data.combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET] = GetDlgItem(hwnd, ID_YEAR_SHOWING_DATE_CBX);
 
-                        // Get the index of the selected item
-                        int selectedIndex = SendMessage(GUI_data.combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_GETCURSEL, 0, 0);
+                            // Get the index of the selected item
+                            int selectedIndex = SendMessage(GUI_data.combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_GETCURSEL, 0, 0);
 
-                        // Get the text of the selected item
-                        char buffer[256];
-                        SendMessage(GUI_data.combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
+                            // Get the text of the selected item
+                            char buffer[256];
+                            SendMessage(GUI_data.combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
 
-                        // update the changes to the variables
-                        GUI_data.showing_date.year = selectedIndex + GUI_data.local_time_date.year - 1;
+                            // update the changes to the variables
+                            GUI_data.showing_date.year = selectedIndex + GUI_data.local_time_date.year - 1;
+                        }
+
+                        get_events_by(GUI_data.last_downloaded_events, GUI_data.showing_date.year, GUI_data.showing_date.month, -1, GUI_data.events_of_showing_date);
+
+                        paint_days_to_default_color(&GUI_data);
+                        paint_days_with_events(&GUI_data);
                     }
-                
-                    get_events_by(GUI_data.last_downloaded_events, GUI_data.showing_date.year, GUI_data.showing_date.month, -1, GUI_data.events_of_showing_date);
+                } 
 
-                    paint_days_to_default_color(&GUI_data);
-                    paint_days_with_events(&GUI_data);
-                }
             }
+            // --------------------------------------------------------------------------------------------------
 
             switch (LOWORD(wParam))
             {
-                // buttons ++++++++++++++++++++++
+                // buttons ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+                
                 case ID_NEW_SCHEDULE_BUTTON:
                     MessageBox(hwnd, "new schedule button", "window", MB_OK);
                     break;
@@ -192,10 +208,48 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
-                
-                default: 
+                default:
+                    // user selects a day for first time on the month
+                    // SCHEDULE SELECTED MENU ,undefined state
+                    if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == UNDEFINED_MENU_STATE)
+                    {
+                        if (wParam >= ID_FIRST_DAY_OF_MONTH && wParam <= ID_LAST_DAY_OF_MONTH)
+                        {
+                            // update the menu state
+                            GUI_data.menu_state[1] = DAY_SELECTED;
+
+                            // update to the variables the selected day
+                            GUI_data.showing_date.day = wParam - ID_FIRST_DAY_OF_MONTH + 1;
+
+                            paint_selected_day(&GUI_data);
+                        }
+
+                        return true; // (break)
+
+                    } 
+
+                    // SCHEDULE SELECTED MENU ,day selected            
+                    else if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == DAY_SELECTED)
+                    {
+
+                        // user selects a day
+                        if (wParam >= ID_FIRST_DAY_OF_MONTH && wParam <= ID_LAST_DAY_OF_MONTH)
+                        {
+                            // update to the variables the selected day
+                            GUI_data.showing_date.day = wParam - ID_FIRST_DAY_OF_MONTH + 1;
+
+                            paint_days_to_default_color(&GUI_data);
+                            paint_days_with_events(&GUI_data);
+                            paint_selected_day(&GUI_data);
+                        }
+                    }
+
                     break;
+
+
+                // --------------------------------------------------------------------------------------------------
             }
+
             break;
 
         case WM_DRAWITEM:
