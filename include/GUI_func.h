@@ -17,12 +17,22 @@ typedef char names_of_available_schedules_t [MAX_SCHEDULES][MAX_FILENAME_LEN];
 
 typedef struct
 {
+	date_event_t date_event;
+	HWND GUI_elements [6];
+	unsigned block_id;
+	unsigned n_page;
+
+} GUI_event_t;
+
+typedef struct
+{
     // GUI elements +++++++++++++++++++++
 	HWND GUI_main_screen;
 	HWND buttons[N_BUTTONS];
 	HWND combo_boxes[N_COMBO_BOXES];
 	HWND text_input_boxes[N_INPUT_BOXES];
 	HWND text[N_TEXTS];
+	GUI_event_t GUI_events_list [MAX_EVENTS];
 	// -----------------------------------
 	// STYLING variables +++++++++++++++++
 	// for each color change we have to save that change here
@@ -59,6 +69,16 @@ typedef struct
 
 // --------------------------------------------------
 
+// GUI_event_t functions +++++++++++++++++++++++++++++++++++++++++++++++++++
+void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, date_event_t date_event, unsigned block_id);
+
+void hide_GUI_event_elements (GUI_event_t* GUI_event);
+
+void show_GUI_event_elements (GUI_event_t* GUI_event);
+
+// -------------------------------------------------------------------------
+
+
 // menu objects control ++++++++++++++++++++++++++++++
 void SetButtonBackgroundColor(HWND hwndButton, COLORREF color);
 
@@ -66,6 +86,10 @@ void DrawCustomButton(LPDRAWITEMSTRUCT lpdis, COLORREF bgColor, char text[]);
 
 // ---------------------------------------------------
 
+// elements creation ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+HWND create_in_box(HWND hwnd, char* default_text, unsigned X, unsigned Y, unsigned width, unsigned heigth);
+
+// ------------------------------------------------------------------------------------------
 
 // initialization +++++++++++++++++++++++++++++++++++++++
 void GUI_init (GUI_data_t*);
@@ -87,6 +111,7 @@ void show_days_of_selected_showing_date (GUI_data_t* GUI_data);
 void show_save_button (GUI_data_t* GUI_data);
 
 void show_no_schedule_selected_menu (GUI_data_t* GUI_data);
+
 // -------------------------------------------------------------------------------------------
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -105,7 +130,10 @@ void paint_days_to_default_color (GUI_data_t* GUI_data);
 void paint_days_with_events (GUI_data_t* GUI_data);
 
 void paint_selected_day (GUI_data_t* GUI_data);
-
 // ---------------------------------------------------------------------------------------------
+
+// data getting +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void get_in_box_text(HWND in_box, char* buffer, int bufferSize);
+// --------------------------------------------------------------------------------------------
 
 #endif

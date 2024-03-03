@@ -40,6 +40,7 @@ RANGES FOR THE ID'S
 #define ID_SAVE_SELECTED_SCHEDULE 3
 #define ID_FIRST_DAY_OF_MONTH 4
 #define ID_LAST_DAY_OF_MONTH ID_FIRST_DAY_OF_MONTH + 30
+#define ID_FIRST_EVENT_BLOCK 300
 
 // combo boxes
 #define ID_COMBO_BOX_OFFSET -100
@@ -48,9 +49,15 @@ RANGES FOR THE ID'S
 #define ID_SELECT_SCHEDULE_CBX 101
 #define ID_MONTH_SHOWING_DATE_CBX 102
 #define ID_YEAR_SHOWING_DATE_CBX 103
+
 // --------------------------------
 
 // STYLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// SCREEN +++++++++++++++++++
+#define WIDTH_SCREEN 900
+#define HEIGTH_SCREEN 500
+
+
 // buttons ++++++++++++++++++
 // RGB
 #define RGB_NEW_SCHEDULE_BUTTON RGB(87, 155, 18)
@@ -84,6 +91,19 @@ RANGES FOR THE ID'S
 #define HEIGTH_FIRST_DAY_OF_MONTH 40
 #define X_FIRST_DAY_OF_MONTH X_MONTH_SHOWING_DATE_CBX
 #define Y_FIRST_DAY_OF_MONTH Y_MONTH_SHOWING_DATE_CBX + HEIGTH_MONTH_SHOWING_DATE_CBX
+
+// day events ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define HEIGTH_EVENT_BLOCK 100
+#define X_FIRST_EVENT_BLOCK 300
+#define Y_FIRST_EVENT_BLOCK 40
+
+#define HEIGTH_EVENTS_CBXS 200
+
+#define WIDTH_DAY_EVENT_CBX 75
+#define WIDTH_MONTH_EVENT_CBX 150
+#define WIDTH_YEAR_EVENT_CBX 100
+#define WIDTH_HOUR_EVENT_CBX 75
+#define WIDTH_MIN_EVENT_CBX 75
 
 // combo boxes +++++++++++++++
 // RGB

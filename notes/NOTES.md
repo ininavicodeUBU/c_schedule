@@ -218,6 +218,37 @@ date_event_t events_of_showing_date[MAX_EVENTS];
 unsigned colors_of_buttons[N_BUTTONS];
 ```
 
+##### Structure to display each event
+When the GUI shows the events of the selected day is tricky to
+access the ID of each element, so it could be convenient to create an structure to save the **combo boxes and elements** of each event.
+
+It would be perfect to do I with an *object* but this is not possible in C, instead we can simulate that *constructor*, and *methods* with specific functions.
+
+But another problem appears with the screen space, it's going to be necessary to add pages, to show more events than can fit on a page.
+So this page is a variable that we have to store.
+
+It's so easy to create new elements that we will rewrite the existing events with new default values at the page to *'simulate'* that we are in other page.
+
+```C
+// structure for each event
+typedef struct
+{
+	date_event_t date_event;
+	HWND GUI_elements [6];
+	unsigned block_id;
+	unsigned n_page;
+
+} GUI_event_t;
+
+GUI_event_t GUI_events_list [MAX_EVENTS];
+```
+
+![[showing_events_analysis.excalidraw|1000]]
+
+
+
+#### Data structure conclusion <hr style="border-color: rgb(50, 200, 200);">
+
 > [!important] Conclusion for the data structure
 > All the data has to be accessible to every function, but it is
 > not so eficient to add every object as a parameter for each function.
@@ -232,6 +263,7 @@ typedef struct
 	HWND combo_boxes[N_COMBO_BOXES];
 	HWND text_input_boxes[N_INPUT_BOXES];
 	HWND text[N_TEXTS];
+	GUI_event_t GUI_events_list [MAX_EVENTS];
 	// -----------------------------------
 	// STYLING variables +++++++++++++++++
 	// for each color change we have to save that change here

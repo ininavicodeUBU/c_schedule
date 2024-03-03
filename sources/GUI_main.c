@@ -27,7 +27,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
 
         case WM_CREATE:
-            
+        if (true)
+        {
+            GUI_event_t GUI_event = GUI_data.GUI_events_list[0];
+            GUI_data.GUI_events_list[0].GUI_elements[5] = create_in_box(GUI_data.GUI_main_screen, GUI_event.date_event.description, X_FIRST_EVENT_BLOCK,
+            Y_FIRST_EVENT_BLOCK + HEIGTH_EVENTS_CBXS * 0,
+            X_FIRST_EVENT_BLOCK + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + 20 + WIDTH_HOUR_EVENT_CBX + WIDTH_MIN_EVENT_CBX, 
+            HEIGTH_EVENT_BLOCK - HEIGTH_EVENTS_CBXS);
+
+        }
 
             break;
     
@@ -83,8 +91,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             paint_days_with_events(&GUI_data);
 
                             // inform to the user which schedule is selected
-                            char str [15];
+                            char str [MAX_PATH_LEN];
                             sprintf(str, "%s", GUI_data.names_of_available_schedules[selectedIndex - 1]);
+                            printf("\nname opening %s ", str);
                             MessageBox(hwnd, str, "Schedule selected", MB_OK);                        
         
                         }
@@ -186,6 +195,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 
                 case ID_NEW_SCHEDULE_BUTTON:
+                // ########## FUNCTIONALITY NO IMPLEMENTED #####################
                     MessageBox(hwnd, "new schedule button", "window", MB_OK);
                     break;
 
@@ -231,7 +241,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     // SCHEDULE SELECTED MENU ,day selected            
                     else if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == DAY_SELECTED)
                     {
-
                         // user selects a day
                         if (wParam >= ID_FIRST_DAY_OF_MONTH && wParam <= ID_LAST_DAY_OF_MONTH)
                         {
