@@ -169,6 +169,16 @@ void GUI_init (GUI_data_t* GUI_data)
         GetModuleHandle(NULL),
         NULL);
 
+    GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X_YEAR_SHOWING_DATE_CBX, Y_YEAR_SHOWING_DATE_CBX, WIDTH_YEAR_SHOWING_DATE_CBX, HEIGTH_YEAR_SHOWING_DATE_CBX,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_YEAR_SHOWING_DATE_CBX, // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+
     // input boxes ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GUI_data->text_input_boxes[ID_NEW_SCHEDULE_NAME_INBOX + INDEX_INBOX_OFFSET] = create_in_box(GUI_data->GUI_main_screen, "name", X_NEW_SCHEDULE_NAME_INBOX,
      Y_NEW_SCHEDULE_NAME_INBOX,

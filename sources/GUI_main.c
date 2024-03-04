@@ -456,7 +456,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             } else if (wParam == ID_SAVE_SELECTED_SCHEDULE) // buttons
             {
                 LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
-                DrawCustomButton(lpdis, RGB_SAVE_SELECTED_SCHEDULE, "S");
+                DrawCustomButton(lpdis, RGB_SAVE_SELECTED_SCHEDULE, "Save schedule");
                 return true;
             } else if (wParam >= ID_FIRST_DAY_OF_MONTH && wParam <= ID_LAST_DAY_OF_MONTH)
             {
