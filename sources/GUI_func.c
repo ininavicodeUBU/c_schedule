@@ -204,6 +204,8 @@ void GUI_init (GUI_data_t* GUI_data)
     ShowWindow(GUI_data->buttons[ID_SAVE_NEW_SCHEDULE_NAME], false);
     ShowWindow(GUI_data->buttons[ID_CANCEL_NEW_SCHEDULE_NAME], false);
 
+    ShowWindow(GUI_data->buttons[ID_NEW_EVENT], false);
+
     ShowWindow(GUI_data->combo_boxes[ID_MONTH_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], false);
     ShowWindow(GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET], false);
 
@@ -216,10 +218,10 @@ void GUI_init (GUI_data_t* GUI_data)
     show_no_schedule_selected_menu(GUI_data);
 
     // GUI events constructor ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    for (int i = 0; i < MAX_DISPLAYING_EVENTS - 1; i++)
+    for (int i = 0; i < MAX_DISPLAYING_EVENTS; i++)
         GUI_event_constructor (GUI_data, &GUI_data->GUI_events_list[i], i);
 
-    // GUI_event_constructor (GUI_data, &GUI_data->GUI_events_list[MAX_DISPLAYING_EVENTS - 1], MAX_DISPLAYING_EVENTS + 1);
+    GUI_event_constructor_manual_pos(GUI_data, &GUI_data->GUI_event_new, X_NEW_EVENT, Y_NEW_EVENT + 25);
     
     // GUI_event_constructor(GUI_data, )
 
@@ -348,6 +350,125 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsign
     hide_GUI_event_elements(&GUI_data->GUI_events_list[block_id]);
 
 }
+
+void GUI_event_constructor_manual_pos (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsigned X, unsigned Y)
+{
+    const char months_list[12][10] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+    char name_of_element [10];
+    
+    // day combo box ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	GUI_event->GUI_elements[0] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X, Y, WIDTH_DAY_EVENT_CBX, HEIGTH_EVENTS_CBXS,
+        GUI_data->GUI_main_screen,
+        (HMENU)(1000), // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+
+
+    for (int i = 1; i <= 31; i++)
+    {
+        sprintf(name_of_element, "%d", i);
+        SendMessage(GUI_event->GUI_elements[0], CB_ADDSTRING, 0, (LPARAM)name_of_element);
+    }
+    SendMessage(GUI_event->GUI_elements[0], CB_SETCURSEL, GUI_event->date_event.date.day - 1, 0); 
+    // ----------------------------------------------------------------------------------------------------------------------------
+
+    // month combo box  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    GUI_event->GUI_elements[1] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X + WIDTH_DAY_EVENT_CBX, Y,
+         WIDTH_MONTH_EVENT_CBX, HEIGTH_EVENTS_CBXS,
+        GUI_data->GUI_main_screen,
+        (HMENU)(1000), // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+
+
+    for (int i = 0; i < 12; i++)
+        SendMessage(GUI_event->GUI_elements[1], CB_ADDSTRING, 0, (LPARAM)months_list[i]);
+    
+    SendMessage(GUI_event->GUI_elements[1], CB_SETCURSEL, GUI_event->date_event.date.month - 1, 0); 
+    // ----------------------------------------------------------------------------------------------------------------------------
+
+    // year combo box  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    GUI_event->GUI_elements[2] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX, Y,
+            WIDTH_YEAR_EVENT_CBX, HEIGTH_EVENTS_CBXS,
+        GUI_data->GUI_main_screen,
+        (HMENU)(1000), // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+
+
+    for (int i = 0; i < 30; i++) // will be displaying 30 years from the local time date - 1
+    {
+        sprintf(name_of_element, "%d", i + GUI_data->local_time_date.year - 1);
+        SendMessage(GUI_event->GUI_elements[2], CB_ADDSTRING, 0, (LPARAM)name_of_element);
+    }
+        
+    //  ----------------------------------------------------------------------------------------------------------------------------
+
+    // hour combo box ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    GUI_event->GUI_elements[3] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + 20, Y,
+            WIDTH_HOUR_EVENT_CBX, HEIGTH_EVENTS_CBXS,
+        GUI_data->GUI_main_screen,
+        (HMENU)(1000), // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+
+    for (int i = 0; i <= 23; i++)
+    {
+        sprintf(name_of_element, "%d", i);
+        SendMessage(GUI_event->GUI_elements[3], CB_ADDSTRING, 0, (LPARAM)name_of_element);
+    }
+    SendMessage(GUI_event->GUI_elements[3], CB_SETCURSEL, GUI_event->date_event.date.hour, 0); 
+    // ----------------------------------------------------------------------------------------------------------------------------
+
+    // hour combo box ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    GUI_event->GUI_elements[4] = CreateWindow(
+        "COMBOBOX",
+        NULL,
+        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+        X + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + 20 + WIDTH_HOUR_EVENT_CBX,
+         Y,
+         WIDTH_MIN_EVENT_CBX, HEIGTH_EVENTS_CBXS,
+        GUI_data->GUI_main_screen,
+        (HMENU)(1000), // Button ID
+        GetModuleHandle(NULL),
+        NULL);
+
+    for (int i = 0; i <= 59; i++)
+    {
+        sprintf(name_of_element, "%d", i);
+        SendMessage(GUI_event->GUI_elements[4], CB_ADDSTRING, 0, (LPARAM)name_of_element);
+    }
+    SendMessage(GUI_event->GUI_elements[4], CB_SETCURSEL, GUI_event->date_event.date.minute, 0); 
+    // ----------------------------------------------------------------------------------------------------------------------------
+
+    // input text box ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    GUI_event->GUI_elements[5] = create_in_box(GUI_data->GUI_main_screen, GUI_event->date_event.description, X,
+     Y + 25,
+      WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + WIDTH_HOUR_EVENT_CBX + WIDTH_MIN_EVENT_CBX, 
+      HEIGTH_INBOX_DESCRIPTION);
+    // ----------------------------------------------------------------------------------------------------------------------------
+
+    hide_GUI_event_elements(GUI_event);
+
+}
+
+
 
 void hide_GUI_event_elements (GUI_event_t* GUI_event)
 {

@@ -33,6 +33,7 @@ typedef struct
 	HWND text_input_boxes[N_INPUT_BOXES];
 	HWND text[N_TEXTS];
 	GUI_event_t GUI_events_list [4];
+	GUI_event_t GUI_event_new;
 	// -----------------------------------
 	// STYLING variables +++++++++++++++++
 	// for each color change we have to save that change here
@@ -64,6 +65,7 @@ typedef struct
 	date_event_t last_downloaded_events[MAX_EVENTS];
     date_event_t events_of_showing_date[MAX_EVENTS];
 	date_event_t events_of_selected_day[MAX_EVENTS];
+	int events_max_id;
 	// --------------------------------------------
 
 } GUI_data_t;
@@ -72,6 +74,8 @@ typedef struct
 
 // GUI_event_t functions +++++++++++++++++++++++++++++++++++++++++++++++++++
 void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsigned block_id);
+
+void GUI_event_constructor_manual_pos (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsigned X, unsigned Y);
 
 void hide_GUI_event_elements (GUI_event_t* GUI_event);
 

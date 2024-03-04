@@ -59,9 +59,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             // substract 1 to the index because the first option is "None" so the first schedule is on index=1
                             sprintf(GUI_data.selected_schedule_path, "%s%s", GUI_data.schedules_folder_path, GUI_data.names_of_available_schedules[selectedIndex - 1]);
 
-                            // download the events of the selected schedule
-                            int aux;
-                            file_to_event_list(GUI_data.selected_schedule_path, GUI_data.last_downloaded_events, &aux);
+                            // download the events of the selected schedule and store the max (id - 1) = events_len
+                            // to be able to append new events at the end of the list
+                            file_to_event_list(GUI_data.selected_schedule_path, GUI_data.last_downloaded_events, &GUI_data.events_max_id);
+                            GUI_data.events_max_id--;
 
                             // hide the items of the <no schedule selected menu>
                             hide_no_schedule_selected_menu(&GUI_data);
@@ -70,6 +71,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             show_date_showing_combo_boxes(&GUI_data);
                             show_days_of_selected_showing_date(&GUI_data);
                             show_save_button(&GUI_data);
+
+                            // show the elements for the new event
+                            show_GUI_event_elements(&GUI_data.GUI_event_new);
+                            ShowWindow(GUI_data.buttons[ID_NEW_EVENT], true);
 
                             paint_days_to_default_color(&GUI_data);
 
@@ -208,6 +213,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             // no matters the state of [1] menu variable, but in case of [1] = DAY_SELECTED, it's necessary save the
                             // the events from the combo boxes and input boxes too
                             // hide the elements too
+                            // hide the elements for the new event
                             if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == DAY_SELECTED)
                             {
                                 save_elements_data_to_events(&GUI_data);
@@ -217,6 +223,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                                 for (int i = 0; i < MAX_DISPLAYING_EVENTS; i++)
                                     hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
+
+                                hide_GUI_event_elements(&GUI_data.GUI_event_new);
+                                ShowWindow(GUI_data.buttons[ID_NEW_EVENT], false);
 
                             }
                         }
@@ -240,6 +249,46 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 
                     }
+                    break;
+
+                case ID_NEW_EVENT:
+                    if (GUI_data.menu_state[0] == SCHEDULE_SELECTED)
+                    {
+                         // append this event to the next available id and increment that id for the next append action
+                        int id = ++GUI_data.events_max_id;
+                                                            
+                        int day, month, year, hour, min;
+                        printf("\nSaving id: %d", id);
+
+                        // Get the selected index from the combo box
+                        day = SendMessage(GUI_data.GUI_event_new.GUI_elements[0], CB_GETCURSEL, 0, 0) + 1;
+                        month = SendMessage(GUI_data.GUI_event_new.GUI_elements[1], CB_GETCURSEL, 0, 0) + 1;
+                        year = SendMessage(GUI_data.GUI_event_new.GUI_elements[2], CB_GETCURSEL, 0, 0) + GUI_data.local_time_date.year - 1;
+                        hour = SendMessage(GUI_data.GUI_event_new.GUI_elements[3], CB_GETCURSEL, 0, 0);
+                        min = SendMessage(GUI_data.GUI_event_new.GUI_elements[4], CB_GETCURSEL, 0, 0);
+                        get_in_box_text(GUI_data.GUI_event_new.GUI_elements[5],
+                        GUI_data.last_downloaded_events[id].description,
+                        sizeof(GUI_data.last_downloaded_events[id].description));
+
+                        GUI_data.last_downloaded_events[id].id = id;
+                        GUI_data.last_downloaded_events[id].date.day = day;
+                        GUI_data.last_downloaded_events[id].date.month = month;
+                        GUI_data.last_downloaded_events[id].date.year = year;
+                        GUI_data.last_downloaded_events[id].date.hour = hour;
+                        GUI_data.last_downloaded_events[id].date.minute = min;
+
+                        // then add the new centinela at the new end of the events list
+                        put_centinela_event(&GUI_data.last_downloaded_events[id + 1]);
+
+                        // then prepare the elements of the new event to get another one (description to "")
+                        // GUI_data.last_downloaded_events[id + 1].description = '\0'; // end of the string at the first element
+                        char temp[2]; temp[0] = '\0';
+                        set_in_box_text(GUI_data.GUI_event_new.GUI_elements[5], temp);
+
+                        // and confirm the action to the user
+                        MessageBox(hwnd, "New event saved", "window", MB_OK);
+                    }
+
                     break;
 
                 default:
