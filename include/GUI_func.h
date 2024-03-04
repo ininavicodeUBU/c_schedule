@@ -18,7 +18,7 @@ typedef char names_of_available_schedules_t [MAX_SCHEDULES][MAX_FILENAME_LEN];
 typedef struct
 {
 	date_event_t date_event;
-	HWND GUI_elements [6];
+	HWND GUI_elements [7]; // day, month, year, hour, minut, description, delete button
 	unsigned block_id;
 	unsigned n_page;
 
@@ -125,7 +125,7 @@ void show_no_schedule_selected_menu (GUI_data_t* GUI_data);
 
 // -------------------------------------------------------------------------------------------
 
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// refreshing +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /**
  * @brief This functions just refreshes the options on the combo boxes of 
  * <Select schedule> and <Delete schedule>, is getting the values from the list
@@ -133,6 +133,7 @@ void show_no_schedule_selected_menu (GUI_data_t* GUI_data);
 */
 void refresh_available_schedules_combo_boxes (GUI_data_t* GUI_data);
 
+void refresh_showing_events (GUI_data_t* GUI_data);
 // -------------------------------------------------------------------------------------------
 
 // painting ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

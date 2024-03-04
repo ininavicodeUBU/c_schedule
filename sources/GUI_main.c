@@ -285,11 +285,56 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         char temp[2]; temp[0] = '\0';
                         set_in_box_text(GUI_data.GUI_event_new.GUI_elements[5], temp);
 
+                        // refreshing the GUI ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        // before any changes, save the data of the elements on the events list
+                        save_elements_data_to_events(&GUI_data);
+
+                        paint_days_to_default_color(&GUI_data);
+                        paint_days_with_events(&GUI_data);
+                        paint_selected_day(&GUI_data);
+
+                        refresh_showing_events(&GUI_data);
+
+                        // -----------------------------------------------------------------------------------
+
                         // and confirm the action to the user
                         MessageBox(hwnd, "New event saved", "window", MB_OK);
                     }
 
                     break;
+                
+                // delete event button ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                // in the range of the event blocks
+                case 300 ... (ID_FIRST_EVENT_BLOCK + ELEMENTS_BY_EVENT_BLOCK * MAX_DISPLAYING_EVENTS):
+
+                    if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == DAY_SELECTED)
+                    {
+                        if ((wParam - ID_FIRST_EVENT_BLOCK) % ELEMENTS_BY_EVENT_BLOCK == 6) 
+                        {
+                            // getting the block of the delete event button pressed
+                            int block_id = (wParam - ID_FIRST_EVENT_BLOCK) / ELEMENTS_BY_EVENT_BLOCK;
+
+                            // delete the event 
+                            delete_event(GUI_data.last_downloaded_events, GUI_data.GUI_events_list[0].date_event.id);
+
+                            // refresh the showing events
+                            save_elements_data_to_events(&GUI_data);
+
+                            // repaint the month days
+                            paint_days_to_default_color(&GUI_data);
+                            paint_days_with_events(&GUI_data);
+                            paint_selected_day(&GUI_data);
+
+                            refresh_showing_events(&GUI_data);
+
+                        }
+
+                        
+                        
+                    }
+
+                    break;
+                // ----------------------------------------------------------------------------------------------------
 
                 default:
                     // user selects a day for first time on the month
@@ -306,28 +351,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                             paint_selected_day(&GUI_data);
 
-                            // ++++++++++++++++++++++++++++++++++++++++++++++++++
-                            // then actualize the list of events for that day
-                            get_events_by(GUI_data.last_downloaded_events, GUI_data.showing_date.year, GUI_data.showing_date.month, GUI_data.showing_date.day, 
-                            GUI_data.events_of_selected_day);
-
-                            int i = 0;
-
-                            while (!end_of_event_list(GUI_data.events_of_selected_day[i]))
-                            {
-                                printf("\nid: %d", GUI_data.events_of_selected_day[i].id);
-                                GUI_data.GUI_events_list[i].date_event = GUI_data.events_of_selected_day[i];
-                                GUI_event_refresh_values(&GUI_data, &GUI_data.GUI_events_list[i]);
-                                show_GUI_event_elements(&GUI_data.GUI_events_list[i]);
-                                i++;
-                            }
-
-                            while (i < MAX_DISPLAYING_EVENTS)
-                            {
-                                hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
-                                i++;
-                            }
-                            // -------------------------------------------------------------
+                            refresh_showing_events(&GUI_data);
                         }
 
                         
@@ -346,7 +370,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             // before any changes, save the data of the elements on the events list
                             save_elements_data_to_events(&GUI_data);
 
-
                             // update to the variables the selected day
                             GUI_data.showing_date.day = wParam - ID_FIRST_DAY_OF_MONTH + 1;
 
@@ -354,30 +377,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             paint_days_with_events(&GUI_data);
                             paint_selected_day(&GUI_data);
 
-                            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                            // then actualize the list of events for that day
-                            
-                            get_events_by(GUI_data.last_downloaded_events, GUI_data.showing_date.year, GUI_data.showing_date.month, GUI_data.showing_date.day, 
-                            GUI_data.events_of_selected_day);
-
-                            int i = 0;
-
-                            while (!end_of_event_list(GUI_data.events_of_selected_day[i]))
-                            {
-                                printf("\nid: %d", GUI_data.events_of_selected_day[i].id);
-                                GUI_data.GUI_events_list[i].date_event = GUI_data.events_of_selected_day[i];
-                                GUI_event_refresh_values(&GUI_data, &GUI_data.GUI_events_list[i]);
-                                show_GUI_event_elements(&GUI_data.GUI_events_list[i]);
-                                i++;
-                            }
-
-                            while (i < MAX_DISPLAYING_EVENTS)
-                            {
-                                hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
-                                i++;
-                            }
-
-                            // -----------------------------------------------------------------------------------
+                            refresh_showing_events(&GUI_data);
                         }
 
                     }
@@ -425,6 +425,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             {
                 LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
                 DrawCustomButton(lpdis, RGB_NEW_EVENT, "New event");
+            } else if (wParam >= ID_FIRST_EVENT_BLOCK)
+            {
+                if ((wParam - ID_FIRST_EVENT_BLOCK) % ELEMENTS_BY_EVENT_BLOCK == 6) //  that indicades delete button
+                {
+                    LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+                    DrawCustomButton(lpdis, RGB_DELETE_EVENT, "X");
+                }
             }
             
             break;

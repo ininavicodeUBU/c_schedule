@@ -68,6 +68,7 @@ RANGES FOR THE ID'S
 #define RGB_DAY_WITH_EVENT RGB(140, 122, 255)
 #define RGB_DAY_SELECTED RGB(131, 255, 122)
 #define RGB_NEW_EVENT RGB(87, 155, 18)
+#define RGB_DELETE_EVENT RGB(236, 72, 72)
 
 // POSITION AND SIZE
 #define X_NEW_SCHEDULE_BUTTON 10
@@ -97,6 +98,9 @@ RANGES FOR THE ID'S
 #define Y_NEW_EVENT Y_FIRST_EVENT_BLOCK + HEIGTH_EVENT_BLOCK * 2 + 25 + HEIGTH_INBOX_DESCRIPTION + 25
 #define WIDTH_NEW_EVENT WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + WIDTH_HOUR_EVENT_CBX + WIDTH_MIN_EVENT_CBX
 #define HEIGTH_NEW_EVENT 25
+
+#define WIDTH_DELETE_EVENT 25
+#define HEIGTH_DELETE_EVENT 50
 // day events ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define HEIGTH_EVENT_BLOCK 100
 #define X_FIRST_EVENT_BLOCK 300
@@ -127,5 +131,5 @@ RANGES FOR THE ID'S
 #define Y_DELETE_SCHEDULE_CBX Y_NEW_SCHEDULE_BUTTON
 // ---------------------------------------------------------------------------
 
-
 #define MENU_STATE_LEN 2
+#define ELEMENTS_BY_EVENT_BLOCK 7

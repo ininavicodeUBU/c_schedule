@@ -74,7 +74,7 @@ void GUI_init (GUI_data_t* GUI_data)
 
     GUI_data->buttons[ID_SAVE_SELECTED_SCHEDULE] = CreateWindow(
         "BUTTON",
-        "S",
+        "Save schedule",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
         X_SAVE_SELECTED_SCHEDULE, Y_SAVE_SELECTED_SCHEDULE, WIDTH_SAVE_SELECTED_SCHEDULE, HEIGTH_SAVE_SELECTED_SCHEDULE,
         GUI_data->GUI_main_screen,
@@ -246,7 +246,7 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsign
         CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
         X_FIRST_EVENT_BLOCK, Y_FIRST_EVENT_BLOCK + HEIGTH_EVENT_BLOCK * block_id, WIDTH_DAY_EVENT_CBX, HEIGTH_EVENTS_CBXS,
         GUI_data->GUI_main_screen,
-        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * 6), // Button ID
+        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * ELEMENTS_BY_EVENT_BLOCK), // Button ID
         GetModuleHandle(NULL),
         NULL);
 
@@ -267,7 +267,7 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsign
         X_FIRST_EVENT_BLOCK + WIDTH_DAY_EVENT_CBX, Y_FIRST_EVENT_BLOCK + HEIGTH_EVENT_BLOCK * block_id,
          WIDTH_MONTH_EVENT_CBX, HEIGTH_EVENTS_CBXS,
         GUI_data->GUI_main_screen,
-        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * 6 + 1), // Button ID
+        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * ELEMENTS_BY_EVENT_BLOCK + 1), // Button ID
         GetModuleHandle(NULL),
         NULL);
 
@@ -286,7 +286,7 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsign
         X_FIRST_EVENT_BLOCK + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX, Y_FIRST_EVENT_BLOCK + HEIGTH_EVENT_BLOCK * block_id,
             WIDTH_YEAR_EVENT_CBX, HEIGTH_EVENTS_CBXS,
         GUI_data->GUI_main_screen,
-        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * 6 + 2), // Button ID
+        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * ELEMENTS_BY_EVENT_BLOCK + 2), // Button ID
         GetModuleHandle(NULL),
         NULL);
 
@@ -307,7 +307,7 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsign
         X_FIRST_EVENT_BLOCK + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + 20, Y_FIRST_EVENT_BLOCK + HEIGTH_EVENT_BLOCK * block_id,
             WIDTH_HOUR_EVENT_CBX, HEIGTH_EVENTS_CBXS,
         GUI_data->GUI_main_screen,
-        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * 6 + 3), // Button ID
+        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * ELEMENTS_BY_EVENT_BLOCK + 3), // Button ID
         GetModuleHandle(NULL),
         NULL);
 
@@ -319,7 +319,7 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsign
     SendMessage(GUI_event->GUI_elements[3], CB_SETCURSEL, GUI_event->date_event.date.hour, 0); 
     // ----------------------------------------------------------------------------------------------------------------------------
 
-    // hour combo box ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // minute combo box ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GUI_event->GUI_elements[4] = CreateWindow(
         "COMBOBOX",
         NULL,
@@ -328,7 +328,7 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsign
          Y_FIRST_EVENT_BLOCK + HEIGTH_EVENT_BLOCK * block_id,
          WIDTH_MIN_EVENT_CBX, HEIGTH_EVENTS_CBXS,
         GUI_data->GUI_main_screen,
-        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * 6 + 4), // Button ID
+        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * ELEMENTS_BY_EVENT_BLOCK + 4), // Button ID
         GetModuleHandle(NULL),
         NULL);
 
@@ -338,6 +338,21 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsign
         SendMessage(GUI_event->GUI_elements[4], CB_ADDSTRING, 0, (LPARAM)name_of_element);
     }
     SendMessage(GUI_event->GUI_elements[4], CB_SETCURSEL, GUI_event->date_event.date.minute, 0); 
+    // ----------------------------------------------------------------------------------------------------------------------------
+
+    // delete button ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    GUI_event->GUI_elements[6] = CreateWindow(
+        "BUTTON",
+        "X",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+        X_FIRST_EVENT_BLOCK + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + WIDTH_HOUR_EVENT_CBX + WIDTH_MIN_EVENT_CBX,
+         Y_FIRST_EVENT_BLOCK + HEIGTH_EVENT_BLOCK * block_id + 25,
+          WIDTH_DELETE_EVENT, HEIGTH_DELETE_EVENT,
+        GUI_data->GUI_main_screen,
+        (HMENU)(ID_FIRST_EVENT_BLOCK + block_id * ELEMENTS_BY_EVENT_BLOCK + 6), // Button ID
+        (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
+        NULL);
+    SetButtonBackgroundColor(GUI_event->GUI_elements[6], RGB_DELETE_EVENT);
     // ----------------------------------------------------------------------------------------------------------------------------
 
     // input text box ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -472,13 +487,13 @@ void GUI_event_constructor_manual_pos (GUI_data_t* GUI_data, GUI_event_t* GUI_ev
 
 void hide_GUI_event_elements (GUI_event_t* GUI_event)
 {
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < ELEMENTS_BY_EVENT_BLOCK; i++)
         ShowWindow(GUI_event->GUI_elements[i], false);
 }
 
 void show_GUI_event_elements (GUI_event_t* GUI_event)
 {
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < ELEMENTS_BY_EVENT_BLOCK; i++)
         ShowWindow(GUI_event->GUI_elements[i], true);
 }
 
@@ -606,6 +621,32 @@ void refresh_available_schedules_combo_boxes (GUI_data_t* GUI_data)
     {
         SendMessage(GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_ADDSTRING, 0, (LPARAM)GUI_data->names_of_available_schedules[i]);
         SendMessage(GUI_data->combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_ADDSTRING, 0, (LPARAM)GUI_data->names_of_available_schedules[i]);
+    }
+}
+
+void refresh_showing_events (GUI_data_t* GUI_data)
+{
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // then actualize the list of events for that day
+    
+    get_events_by(GUI_data->last_downloaded_events, GUI_data->showing_date.year, GUI_data->showing_date.month, GUI_data->showing_date.day, 
+    GUI_data->events_of_selected_day);
+
+    int i = 0;
+
+    while (!end_of_event_list(GUI_data->events_of_selected_day[i]))
+    {
+        GUI_data->GUI_events_list[i].date_event = GUI_data->events_of_selected_day[i];
+        GUI_event_refresh_values(GUI_data, &GUI_data->GUI_events_list[i]);
+        show_GUI_event_elements(&GUI_data->GUI_events_list[i]);
+        i++;
+    }
+
+    while (i < MAX_DISPLAYING_EVENTS)
+    {
+        hide_GUI_event_elements(&GUI_data->GUI_events_list[i]);
+        i++;
     }
 }
 // -------------------------------------------------------------------------------------------
