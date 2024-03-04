@@ -22,6 +22,7 @@
 // [1]
 #define UNDEFINED_MENU_STATE 0
 #define DAY_SELECTED 1
+#define CREATING_NEW_SCHEDULE 2
 
 // ---------------------------------------------------------------------------
 
@@ -45,11 +46,14 @@ RANGES FOR THE ID'S
 
 // combo boxes
 #define ID_COMBO_BOX_OFFSET -100
+#define INDEX_INBOX_OFFSET -200
 
 #define ID_DELETE_SCHEDULE_CBX 100
 #define ID_SELECT_SCHEDULE_CBX 101
 #define ID_MONTH_SHOWING_DATE_CBX 102
 #define ID_YEAR_SHOWING_DATE_CBX 103
+
+#define ID_NEW_SCHEDULE_NAME_INBOX 200
 
 // --------------------------------
 
@@ -115,7 +119,7 @@ RANGES FOR THE ID'S
 #define WIDTH_HOUR_EVENT_CBX 75
 #define WIDTH_MIN_EVENT_CBX 75
 
-// combo boxes +++++++++++++++
+// combo boxes ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // RGB
 #define RGB_DELETE_SCHEDULE_CBX RGB(235, 48, 48)
 
@@ -129,6 +133,11 @@ RANGES FOR THE ID'S
 #define HEIGTH_DELETE_SCHEDULE_CBX 100
 #define X_DELETE_SCHEDULE_CBX X_NEW_SCHEDULE_BUTTON + 150
 #define Y_DELETE_SCHEDULE_CBX Y_NEW_SCHEDULE_BUTTON
+
+#define X_NEW_SCHEDULE_NAME_INBOX X_SAVE_SELECTED_SCHEDULE
+#define Y_NEW_SCHEDULE_NAME_INBOX Y_SAVE_SELECTED_SCHEDULE
+#define WIDTH_NEW_SCHEDULE_NAME_INBOX WIDTH_SAVE_SELECTED_SCHEDULE
+#define HEIGTH_NEW_SCHEDULE_NAME_INBOX HEIGTH_SAVE_SELECTED_SCHEDULE
 // ---------------------------------------------------------------------------
 
 #define MENU_STATE_LEN 2

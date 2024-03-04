@@ -107,7 +107,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         char buffer[256];
                         SendMessage(GUI_data.combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_GETLBTEXT, selectedIndex, (LPARAM)buffer);
 
-                        // index 0 is none
+                        // index 0 is "None" option
                         if (selectedIndex > 0)
                         {
                             // then delete the selected file
@@ -200,7 +200,53 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                 case ID_NEW_SCHEDULE_BUTTON:
                 // ########## FUNCTIONALITY NO IMPLEMENTED #####################
-                    MessageBox(hwnd, "new schedule button", "window", MB_OK);
+                    hide_no_schedule_selected_menu(&GUI_data);
+
+                    // show the input box
+                    ShowWindow(GUI_data.text_input_boxes[ID_NEW_SCHEDULE_NAME_INBOX + INDEX_INBOX_OFFSET], true);
+                    // show the confirm button
+                    ShowWindow(GUI_data.buttons[ID_SAVE_NEW_SCHEDULE_NAME], true);
+
+                    // update the menu
+                    GUI_data.menu_state[1] = CREATING_NEW_SCHEDULE;
+
+                    break;
+
+                case ID_SAVE_NEW_SCHEDULE_NAME: 
+                    if (true)
+                    {
+                        // get the name of the file
+                        char text_on_box[MAX_FILENAME_LEN];
+                        get_in_box_text(GUI_data.text_input_boxes[ID_NEW_SCHEDULE_NAME_INBOX + INDEX_INBOX_OFFSET], text_on_box, sizeof(text_on_box));
+
+                        char full_path_to_save [MAX_PATH_LEN];
+                        sprintf(full_path_to_save, "%s%s%s", GUI_data.schedules_folder_path,
+                                text_on_box, ".txt");
+
+                        // create the file
+                        new_file(full_path_to_save);
+
+                        // get the list of schedules from the directory
+                        ls(GUI_data.schedules_folder_path, GUI_data.names_of_available_schedules, ".txt");
+
+                        // reset the combo box to the option "None"
+                        refresh_available_schedules_combo_boxes(&GUI_data);
+
+                        // and then show another time the menu of <no selected schedule>
+                        show_no_schedule_selected_menu(&GUI_data);
+
+                        // hide the elements of the creating schedule menu
+                        ShowWindow(GUI_data.text_input_boxes[ID_NEW_SCHEDULE_NAME_INBOX + INDEX_INBOX_OFFSET], false);
+                        ShowWindow(GUI_data.buttons[ID_SAVE_NEW_SCHEDULE_NAME], false);
+
+                        // update the menu state
+                        GUI_data.menu_state[1] == UNDEFINED_MENU_STATE;
+
+                        // comunicate to the user
+                        MessageBox(hwnd, "Schedule saved", "Hey!", MB_OK);
+
+                    }
+
                     break;
 
                 case ID_SAVE_SELECTED_SCHEDULE:

@@ -45,7 +45,7 @@ void GUI_init (GUI_data_t* GUI_data)
     GUI_data->menu_state[1] = UNDEFINED_MENU_STATE;
 
 
-    // // ########################################## GENERATING GUI ELEMENTS ##########################################
+    // ########################################## GENERATING GUI ELEMENTS ##########################################
     // main screen ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GUI_data->GUI_main_screen = CreateWindowEx(
         0,
@@ -169,15 +169,10 @@ void GUI_init (GUI_data_t* GUI_data)
         GetModuleHandle(NULL),
         NULL);
 
-    GUI_data->combo_boxes[ID_YEAR_SHOWING_DATE_CBX + ID_COMBO_BOX_OFFSET] = CreateWindow(
-        "COMBOBOX",
-        NULL,
-        CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
-        X_YEAR_SHOWING_DATE_CBX, Y_YEAR_SHOWING_DATE_CBX, WIDTH_YEAR_SHOWING_DATE_CBX, HEIGTH_YEAR_SHOWING_DATE_CBX,
-        GUI_data->GUI_main_screen,
-        (HMENU)ID_YEAR_SHOWING_DATE_CBX, // Button ID
-        GetModuleHandle(NULL),
-        NULL);
+    // input boxes ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    GUI_data->text_input_boxes[ID_NEW_SCHEDULE_NAME_INBOX + INDEX_INBOX_OFFSET] = create_in_box(GUI_data->GUI_main_screen, "name", X_NEW_SCHEDULE_NAME_INBOX,
+     Y_NEW_SCHEDULE_NAME_INBOX,
+        WIDTH_NEW_SCHEDULE_NAME_INBOX, HEIGTH_NEW_SCHEDULE_NAME_INBOX);
 
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // adding options to combo boxes
@@ -211,6 +206,8 @@ void GUI_init (GUI_data_t* GUI_data)
 
     for (int i = ID_FIRST_DAY_OF_MONTH; i <= ID_LAST_DAY_OF_MONTH; i++)
         ShowWindow(GUI_data->buttons[i], false);
+
+    ShowWindow(GUI_data->text_input_boxes[ID_NEW_SCHEDULE_NAME_INBOX + INDEX_INBOX_OFFSET], false);
     
     // -------------------------------------------------------------------------------------------------------------------------------------------------
 

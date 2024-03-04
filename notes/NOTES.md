@@ -304,7 +304,8 @@ typedef struct
 ## Functionalities
 
 - Delete schedules
-- Select schedules, visualize and modify its data
+- Select schedules
+- Visualize, add, delete and modify
 
 ## Bugs
 
@@ -317,10 +318,11 @@ typedef struct
 
 <hr style="border-color: rgb(50, 150, 250);">
 
-# #V0_1 
+# #V1_0 
 
 ## Adding new events
+For the moment we will display 3 event block, and the last block that can fit will be reserved for the new event creation
 
 ![[GUI_preview events|1000]]
 
-We will leave one of the displaying events, and put a blank event, so the user can fill the values and on the save button that event is appended to the last_downloaded_events
+## Deleting events
