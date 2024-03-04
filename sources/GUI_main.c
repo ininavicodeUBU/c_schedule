@@ -16,9 +16,6 @@ GUI_data_t GUI_data;
 // -----------------------------------------------------------------
 
 
-
-
-
 // Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -138,7 +135,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         // in case of having [1] = selected_day, then we have to hide all the elements of the events
                         if (GUI_data.menu_state[1] == DAY_SELECTED)
                         {
-                            for (int i = 0; i < 4; i++)
+                            save_elements_data_to_events(&GUI_data);
+
+                            for (int i = 0; i < MAX_DISPLAYING_EVENTS; i++)
                                 hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
                         }
                         // -----------
@@ -211,37 +210,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             // hide the elements too
                             if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == DAY_SELECTED)
                             {
-                                int i = 0;
-                                printf("\nfirst element id: %d", GUI_data.events_of_selected_day[i].id);
-                                while (!end_of_event_list(GUI_data.events_of_selected_day[i]))
-                                {
-                                    int id = GUI_data.events_of_selected_day[i].id;
-                                    int day, month, year, hour, min;
-
-                                    printf("\n I am on %d with id: %d", i, id);
-
-                                    // Get the selected index from the combo box
-                                    day = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[0], CB_GETCURSEL, 0, 0) + 1;
-                                    month = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[1], CB_GETCURSEL, 0, 0) + 1;
-                                    year = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[2], CB_GETCURSEL, 0, 0) + GUI_data.local_time_date.year;
-                                    hour = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[3], CB_GETCURSEL, 0, 0);
-                                    min = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[4], CB_GETCURSEL, 0, 0);
-                                    get_in_box_text(GUI_data.GUI_events_list[i].GUI_elements[5],
-                                    GUI_data.last_downloaded_events[GUI_data.GUI_events_list[i].date_event.id].description,
-                                    sizeof(GUI_data.last_downloaded_events[GUI_data.GUI_events_list[i].date_event.id].description));
-
-                                    GUI_data.last_downloaded_events[id].date.day = day;
-                                    GUI_data.last_downloaded_events[id].date.month = month;
-                                    GUI_data.last_downloaded_events[id].date.year = year;
-                                    GUI_data.last_downloaded_events[id].date.hour = hour;
-                                    GUI_data.last_downloaded_events[id].date.minute = min;
-                                    i++;
-                                }
+                                save_elements_data_to_events(&GUI_data);
 
                                 // the save the changes to the file
                                 event_list_to_file(GUI_data.selected_schedule_path, GUI_data.last_downloaded_events);
 
-                                for (int i = 0; i < 4; i++)
+                                for (int i = 0; i < MAX_DISPLAYING_EVENTS; i++)
                                     hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
 
                             }
@@ -292,13 +266,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                             while (!end_of_event_list(GUI_data.events_of_selected_day[i]))
                             {
+                                printf("\nid: %d", GUI_data.events_of_selected_day[i].id);
                                 GUI_data.GUI_events_list[i].date_event = GUI_data.events_of_selected_day[i];
                                 GUI_event_refresh_values(&GUI_data, &GUI_data.GUI_events_list[i]);
                                 show_GUI_event_elements(&GUI_data.GUI_events_list[i]);
                                 i++;
                             }
 
-                            while (i < 4)
+                            while (i < MAX_DISPLAYING_EVENTS)
                             {
                                 hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
                                 i++;
@@ -319,6 +294,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         // user selects a day
                         if (wParam >= ID_FIRST_DAY_OF_MONTH && wParam <= ID_LAST_DAY_OF_MONTH)
                         {
+                            // before any changes, save the data of the elements on the events list
+                            save_elements_data_to_events(&GUI_data);
+
+
                             // update to the variables the selected day
                             GUI_data.showing_date.day = wParam - ID_FIRST_DAY_OF_MONTH + 1;
 
@@ -343,7 +322,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                                 i++;
                             }
 
-                            while (i < 4)
+                            while (i < MAX_DISPLAYING_EVENTS)
                             {
                                 hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
                                 i++;
@@ -393,6 +372,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
                 DrawCustomButton(lpdis, GUI_data.colors_of_buttons[wParam], text_of_button);
                 return true;
+            } else if (wParam == ID_NEW_EVENT)
+            {
+                LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+                DrawCustomButton(lpdis, RGB_NEW_EVENT, "New event");
             }
             
             break;

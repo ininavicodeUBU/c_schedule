@@ -45,8 +45,8 @@ void GUI_init (GUI_data_t* GUI_data)
     GUI_data->menu_state[1] = UNDEFINED_MENU_STATE;
 
 
-    // generating GUI elements +++++++++++++++++++++++++
-    // main screen
+    // // ########################################## GENERATING GUI ELEMENTS ##########################################
+    // main screen ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GUI_data->GUI_main_screen = CreateWindowEx(
         0,
         "MyWindowClass",
@@ -58,7 +58,8 @@ void GUI_init (GUI_data_t* GUI_data)
     ShowWindow(GUI_data->GUI_main_screen, SW_SHOWDEFAULT);
     UpdateWindow(GUI_data->GUI_main_screen);
 
-    // generating buttons
+
+    // generating buttons ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GUI_data->buttons[ID_NEW_SCHEDULE_BUTTON] = CreateWindow(
         "BUTTON",
         "New Schedule",
@@ -124,9 +125,20 @@ void GUI_init (GUI_data_t* GUI_data)
             NULL);
     }
 
+    GUI_data->buttons[ID_NEW_EVENT] = CreateWindow(
+        "BUTTON",
+        "New event",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+        X_NEW_EVENT, Y_NEW_EVENT, WIDTH_NEW_EVENT, HEIGTH_NEW_EVENT,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_NEW_EVENT, // Button ID
+        (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
+        NULL);
+    SetButtonBackgroundColor(GUI_data->buttons[ID_NEW_EVENT], RGB_NEW_EVENT);
+
    
     
-    // generating combo boxes
+    // generating combo boxes ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET] = CreateWindow(
         "COMBOBOX",
         NULL,
@@ -204,8 +216,12 @@ void GUI_init (GUI_data_t* GUI_data)
     show_no_schedule_selected_menu(GUI_data);
 
     // GUI events constructor ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    for (int i = 0; i < 4; i++)
-        GUI_event_constructor (GUI_data, &GUI_data->GUI_events_list[i], GUI_data->GUI_events_list->date_event, i);
+    for (int i = 0; i < MAX_DISPLAYING_EVENTS - 1; i++)
+        GUI_event_constructor (GUI_data, &GUI_data->GUI_events_list[i], i);
+
+    // GUI_event_constructor (GUI_data, &GUI_data->GUI_events_list[MAX_DISPLAYING_EVENTS - 1], MAX_DISPLAYING_EVENTS + 1);
+    
+    // GUI_event_constructor(GUI_data, )
 
     // ----------------------------------------------------------------------------------------------------------------------------
 
@@ -214,7 +230,7 @@ void GUI_init (GUI_data_t* GUI_data)
 //  ----------------------------------------------------------------------------------------------------------------------------------------------------
 
 // GUI_event_t functions  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, date_event_t date_event, unsigned block_id)
+void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsigned block_id)
 {
     const char months_list[12][10] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
     char name_of_element [10];
@@ -352,6 +368,7 @@ void GUI_event_refresh_values (GUI_data_t* GUI_data, GUI_event_t* GUI_event)
     SendMessage(GUI_event->GUI_elements[2], CB_SETCURSEL, GUI_event->date_event.date.year - GUI_data->local_time_date.year + 1, 0); 
     SendMessage(GUI_event->GUI_elements[3], CB_SETCURSEL, GUI_event->date_event.date.hour, 0); 
     SendMessage(GUI_event->GUI_elements[4], CB_SETCURSEL, GUI_event->date_event.date.minute, 0); 
+
     set_in_box_text(GUI_event->GUI_elements[5], GUI_event->date_event.description);
     
 }
@@ -514,3 +531,33 @@ void get_in_box_text(HWND in_box, char* buffer, int bufferSize) {
     free(wideBuffer);
 }
 // -------------------------------------------------------------------------------------------
+
+// data saving ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void save_elements_data_to_events (GUI_data_t* GUI_data)
+{
+    int i = 0;
+    while (!end_of_event_list(GUI_data->events_of_selected_day[i]))
+    {
+        int id = GUI_data->events_of_selected_day[i].id;
+        int day, month, year, hour, min;
+        printf("\nSaving id: %d", id);
+
+        // Get the selected index from the combo box
+        day = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[0], CB_GETCURSEL, 0, 0) + 1;
+        month = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[1], CB_GETCURSEL, 0, 0) + 1;
+        year = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[2], CB_GETCURSEL, 0, 0) + GUI_data->local_time_date.year - 1;
+        hour = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[3], CB_GETCURSEL, 0, 0);
+        min = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[4], CB_GETCURSEL, 0, 0);
+        get_in_box_text(GUI_data->GUI_events_list[i].GUI_elements[5],
+        GUI_data->last_downloaded_events[GUI_data->GUI_events_list[i].date_event.id].description,
+        sizeof(GUI_data->last_downloaded_events[GUI_data->GUI_events_list[i].date_event.id].description));
+
+        GUI_data->last_downloaded_events[id].date.day = day;
+        GUI_data->last_downloaded_events[id].date.month = month;
+        GUI_data->last_downloaded_events[id].date.year = year;
+        GUI_data->last_downloaded_events[id].date.hour = hour;
+        GUI_data->last_downloaded_events[id].date.minute = min;
+        i++;
+    }
+}
+// ----------------------------------------------------------------------------------------------------------------------------

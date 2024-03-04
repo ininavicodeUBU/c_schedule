@@ -2,6 +2,7 @@
 Compilation arguments for GUI functions:
     -lgdi32
 
+# #V0_0
 
 ## Flow of the GUI:
 
@@ -299,3 +300,27 @@ typedef struct
 ```
 
 
+# Conclusions of V0.0
+## Functionalities
+
+- Delete schedules
+- Select schedules, visualize and modify its data
+
+## Bugs
+
+- No bug found
+
+## Next improvements
+
+- Add and delete events
+- Create new schedules
+
+<hr style="border-color: rgb(50, 150, 250);">
+
+# #V0_1 
+
+## Adding new events
+
+![[GUI_preview events|1000]]
+
+We will leave one of the displaying events, and put a blank event, so the user can fill the values and on the save button that event is appended to the last_downloaded_events

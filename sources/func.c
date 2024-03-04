@@ -347,20 +347,49 @@ void file_to_event_list (char filename[], date_event_t event_list[], int *n_even
     }
     else
     {
-        // fill the events list with the file data
+        int i;
+        bool in_quotes;
         while (!feof(f_sch) && (n_event < MAX_EVENTS))
         {
+            in_quotes = false;
+            i = 0;
+
             event_list[n_event].id = (unsigned)n_event;
-            fscanf(f_sch, "%d %d %d %d %d \"%255[^\"]\"",
+            fscanf(f_sch, "%d %d %d %d %d",
                         &event_list[n_event].date.day,
                         &event_list[n_event].date.month,
                         &event_list[n_event].date.year,
                         &event_list[n_event].date.hour,
-                        &event_list[n_event].date.minute,
-                        event_list[n_event].description);
+                        &event_list[n_event].date.minute);
+
+
+            
+            char f_char;
+            fscanf(f_sch, "%c", &f_char);
+            in_quotes = (f_char == '"');
+            while (!in_quotes && !feof(f_sch))
+            {   
+                fscanf(f_sch, "%c", &f_char);
+                in_quotes = (f_char == '"');
+            }
+
+            while (in_quotes && !feof(f_sch))
+            {
+                fscanf(f_sch, "%c", &f_char);
+
+                in_quotes = (f_char != '"');
+                if (in_quotes)
+                {
+                    event_list[n_event].description[i] = f_char;
+                    i++;
+
+                }
+                
+            }
 
             n_event++;
         }
+        
 
         fclose(f_sch);
 

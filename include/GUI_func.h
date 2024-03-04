@@ -71,7 +71,7 @@ typedef struct
 // --------------------------------------------------
 
 // GUI_event_t functions +++++++++++++++++++++++++++++++++++++++++++++++++++
-void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, date_event_t date_event, unsigned block_id);
+void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, unsigned block_id);
 
 void hide_GUI_event_elements (GUI_event_t* GUI_event);
 
@@ -142,5 +142,9 @@ void paint_selected_day (GUI_data_t* GUI_data);
 // data getting +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void get_in_box_text(HWND in_box, char* buffer, int bufferSize);
 // --------------------------------------------------------------------------------------------
+
+// data saving ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void save_elements_data_to_events (GUI_data_t* GUI_data);
+// ----------------------------------------------------------------------------------------------------------------------------
 
 #endif
