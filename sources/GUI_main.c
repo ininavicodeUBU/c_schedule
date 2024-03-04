@@ -27,15 +27,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
 
         case WM_CREATE:
-        if (true)
-        {
-            GUI_event_t GUI_event = GUI_data.GUI_events_list[0];
-            GUI_data.GUI_events_list[0].GUI_elements[5] = create_in_box(GUI_data.GUI_main_screen, GUI_event.date_event.description, X_FIRST_EVENT_BLOCK,
-            Y_FIRST_EVENT_BLOCK + HEIGTH_EVENTS_CBXS * 0,
-            X_FIRST_EVENT_BLOCK + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + 20 + WIDTH_HOUR_EVENT_CBX + WIDTH_MIN_EVENT_CBX, 
-            HEIGTH_EVENT_BLOCK - HEIGTH_EVENTS_CBXS);
-
-        }
 
             break;
     
@@ -94,7 +85,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             char str [MAX_PATH_LEN];
                             sprintf(str, "%s", GUI_data.names_of_available_schedules[selectedIndex - 1]);
                             printf("\nname opening %s ", str);
-                            MessageBox(hwnd, str, "Schedule selected", MB_OK);                        
+                            // MessageBox(hwnd, str, "Schedule selected", MB_OK);                        
         
                         }
                         
@@ -141,9 +132,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 else if (GUI_data.menu_state[0] == SCHEDULE_SELECTED)
                 {
                     // actualize the available schedules for the new month/year selected
-                    // no matters the [1]] of the menu state
+                    // no matters the [1] of the menu state
                     if (LOWORD(wParam) == ID_MONTH_SHOWING_DATE_CBX || LOWORD(wParam) == ID_YEAR_SHOWING_DATE_CBX)
                     {
+                        // in case of having [1] = selected_day, then we have to hide all the elements of the events
+                        if (GUI_data.menu_state[1] == DAY_SELECTED)
+                        {
+                            for (int i = 0; i < 4; i++)
+                                hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
+                        }
+                        // -----------
+
                         // changes the month
                         if (LOWORD(wParam) == ID_MONTH_SHOWING_DATE_CBX)
                         {
@@ -179,6 +178,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             GUI_data.showing_date.year = selectedIndex + GUI_data.local_time_date.year - 1;
                         }
 
+                        // and actualize the menu, so now we go to <no day selected>
+                        GUI_data.menu_state[1] = UNDEFINED_MENU_STATE;
                         get_events_by(GUI_data.last_downloaded_events, GUI_data.showing_date.year, GUI_data.showing_date.month, -1, GUI_data.events_of_showing_date);
 
                         paint_days_to_default_color(&GUI_data);
@@ -193,17 +194,62 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             {
                 // buttons ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-                
                 case ID_NEW_SCHEDULE_BUTTON:
                 // ########## FUNCTIONALITY NO IMPLEMENTED #####################
                     MessageBox(hwnd, "new schedule button", "window", MB_OK);
                     break;
 
                 case ID_SAVE_SELECTED_SCHEDULE:
+
                     if (GUI_data.menu_state[0] == SCHEDULE_SELECTED)
                     {
+
+                        if (GUI_data.menu_state[1] == DAY_SELECTED)
+                        {
+                            // no matters the state of [1] menu variable, but in case of [1] = DAY_SELECTED, it's necessary save the
+                            // the events from the combo boxes and input boxes too
+                            // hide the elements too
+                            if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == DAY_SELECTED)
+                            {
+                                int i = 0;
+                                printf("\nfirst element id: %d", GUI_data.events_of_selected_day[i].id);
+                                while (!end_of_event_list(GUI_data.events_of_selected_day[i]))
+                                {
+                                    int id = GUI_data.events_of_selected_day[i].id;
+                                    int day, month, year, hour, min;
+
+                                    printf("\n I am on %d with id: %d", i, id);
+
+                                    // Get the selected index from the combo box
+                                    day = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[0], CB_GETCURSEL, 0, 0) + 1;
+                                    month = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[1], CB_GETCURSEL, 0, 0) + 1;
+                                    year = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[2], CB_GETCURSEL, 0, 0) + GUI_data.local_time_date.year;
+                                    hour = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[3], CB_GETCURSEL, 0, 0);
+                                    min = SendMessage(GUI_data.GUI_events_list[i].GUI_elements[4], CB_GETCURSEL, 0, 0);
+                                    get_in_box_text(GUI_data.GUI_events_list[i].GUI_elements[5],
+                                    GUI_data.last_downloaded_events[GUI_data.GUI_events_list[i].date_event.id].description,
+                                    sizeof(GUI_data.last_downloaded_events[GUI_data.GUI_events_list[i].date_event.id].description));
+
+                                    GUI_data.last_downloaded_events[id].date.day = day;
+                                    GUI_data.last_downloaded_events[id].date.month = month;
+                                    GUI_data.last_downloaded_events[id].date.year = year;
+                                    GUI_data.last_downloaded_events[id].date.hour = hour;
+                                    GUI_data.last_downloaded_events[id].date.minute = min;
+                                    i++;
+                                }
+
+                                // the save the changes to the file
+                                event_list_to_file(GUI_data.selected_schedule_path, GUI_data.last_downloaded_events);
+
+                                for (int i = 0; i < 4; i++)
+                                    hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
+
+                            }
+                        }
+
                         // actualize menu state
                         GUI_data.menu_state[0] = NO_SCHEDULE_SELECTED;
+                        GUI_data.menu_state[1] = UNDEFINED_MENU_STATE;
 
                         // save the data of the schedule
                         event_list_to_file(GUI_data.selected_schedule_path, GUI_data.last_downloaded_events);
@@ -214,6 +260,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         MessageBox(hwnd, "Saving actual schedule", "window", MB_OK);
                         hide_selected_schedule_menu(&GUI_data);
                         show_no_schedule_selected_menu(&GUI_data);
+
+                        // ----------------------------------------------------------------------------------------------------------------------------
+
+
 
                     }
                     break;
@@ -232,7 +282,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             GUI_data.showing_date.day = wParam - ID_FIRST_DAY_OF_MONTH + 1;
 
                             paint_selected_day(&GUI_data);
+
+                            // ++++++++++++++++++++++++++++++++++++++++++++++++++
+                            // then actualize the list of events for that day
+                            get_events_by(GUI_data.last_downloaded_events, GUI_data.showing_date.year, GUI_data.showing_date.month, GUI_data.showing_date.day, 
+                            GUI_data.events_of_selected_day);
+
+                            int i = 0;
+
+                            while (!end_of_event_list(GUI_data.events_of_selected_day[i]))
+                            {
+                                GUI_data.GUI_events_list[i].date_event = GUI_data.events_of_selected_day[i];
+                                GUI_event_refresh_values(&GUI_data, &GUI_data.GUI_events_list[i]);
+                                show_GUI_event_elements(&GUI_data.GUI_events_list[i]);
+                                i++;
+                            }
+
+                            while (i < 4)
+                            {
+                                hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
+                                i++;
+                            }
+                            // -------------------------------------------------------------
                         }
+
+                        
+                        
 
                         return true; // (break)
 
@@ -250,7 +325,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             paint_days_to_default_color(&GUI_data);
                             paint_days_with_events(&GUI_data);
                             paint_selected_day(&GUI_data);
+
+                            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                            // then actualize the list of events for that day
+                            
+                            get_events_by(GUI_data.last_downloaded_events, GUI_data.showing_date.year, GUI_data.showing_date.month, GUI_data.showing_date.day, 
+                            GUI_data.events_of_selected_day);
+
+                            int i = 0;
+
+                            while (!end_of_event_list(GUI_data.events_of_selected_day[i]))
+                            {
+                                printf("\nid: %d", GUI_data.events_of_selected_day[i].id);
+                                GUI_data.GUI_events_list[i].date_event = GUI_data.events_of_selected_day[i];
+                                GUI_event_refresh_values(&GUI_data, &GUI_data.GUI_events_list[i]);
+                                show_GUI_event_elements(&GUI_data.GUI_events_list[i]);
+                                i++;
+                            }
+
+                            while (i < 4)
+                            {
+                                hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
+                                i++;
+                            }
+
+                            // -----------------------------------------------------------------------------------
                         }
+
                     }
 
                     break;

@@ -209,6 +209,10 @@ There are the filtered last_downloaded_events by the showing date.
 date_event_t events_of_showing_date[MAX_EVENTS];
 ```
 
+##### Events of the selected day
+```C
+date_event_t events_of_selected_day[MAX_EVENTS];
+```
 
 > [!warning] Adding dynamic colors to the buttons of the months
 > For problems on the arhitechture of the windows API we have to save the colors of the buttons to assignate these on the painting call
@@ -288,6 +292,7 @@ typedef struct
 	date_event_t last_downloaded_events[MAX_EVENTS];
 	
 	date_event_t events_of_showing_date[MAX_EVENTS];
+	date_event_t events_of_selected_day[MAX_EVENTS];
 	// -----------------------------------
 
 } GUI_data_t;

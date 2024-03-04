@@ -1,7 +1,22 @@
 #include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 HWND g_hButton;
 HWND g_hEdit;
+HWND combo_box;
+
+void setEditText(HWND in_box, const char* newText) {
+    // Convert narrow string to wide string
+    int len = MultiByteToWideChar(CP_UTF8, 0, newText, -1, NULL, 0);
+    wchar_t* wideText = malloc(len * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, newText, -1, wideText, len);
+
+    // Set the text of the edit control
+    SendMessageW(in_box, WM_SETTEXT, 0, (LPARAM)wideText);
+
+    free(wideText);
+}
 
 void get_in_box_text(HWND in_box, char* buffer, int bufferSize) {
     // Get the text from the edit control
@@ -40,18 +55,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_CREATE:
 
+        combo_box = CreateWindow(
+            "COMBOBOX",
+            NULL,
+            CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VSCROLL | WS_VISIBLE,
+            200, 10, 100, 100,
+            hwnd,
+            (HMENU)2, // Button ID
+            GetModuleHandle(NULL),
+            NULL);
+
+        char name_of_element [40];
+        for (int i = 0; i <= 59; i++)
+        {
+            sprintf(name_of_element, "%d", i+1);
+            SendMessage(combo_box, CB_ADDSTRING, 0, (LPARAM)name_of_element);
+        }
+
         
         g_hEdit = create_in_box(hwnd, "cacatua monstruosa", 10, 40, 150, 150);
-        // Create an edit control
-        // g_hEdit = CreateWindowW(
-        //     L"EDIT",         // Predefined class; Unicode assumed
-        //     L"Type here",    // Default text
-        //     WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL | ES_MULTILINE,
-        //     10, 40, 200, 50,  // x, y, width, height
-        //     hwnd,            // Parent window
-        //     (HMENU)2,        // Control ID
-        //     (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
-        //     NULL);           // Pointer not needed
+    
 
         // Create a button
         g_hButton = CreateWindowW(
@@ -66,21 +89,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
 
     case WM_COMMAND:
-        if (HIWORD(wParam) == BN_CLICKED) {
-            if (LOWORD(wParam) == 1) {
-                // Handle button click
-                char buffer[256];  // Adjust the buffer size as needed
-                get_in_box_text(g_hEdit, buffer, sizeof(buffer));
-                MessageBoxA(NULL, buffer, "Entered Text", MB_OK);
-            } else if (LOWORD(wParam) == 2)
-            {
-                // Handle button click
-                char buffer[256];  // Adjust the buffer size as needed
-                get_in_box_text(g_hEdit, buffer, sizeof(buffer));
-                MessageBoxA(NULL, buffer, "You entered Text", MB_OK);
-            }
+    if (HIWORD(wParam) == BN_CLICKED) {
+        if (LOWORD(wParam) == 1) {
+            // Handle button click
+            char buffer[256];  // Adjust the buffer size as needed
+            get_in_box_text(g_hEdit, buffer, sizeof(buffer));
+            MessageBoxA(NULL, buffer, "Entered Text", MB_OK);
+
+            // Get the selected index from the combo box
+            int selectedIndex = SendMessage(combo_box, CB_GETCURSEL, 0, 0);
+
+            // Display the selected index
+            char indexBuffer[10];  // Adjust the buffer size as needed
+            sprintf(indexBuffer, "Selected Index: %d", selectedIndex);
+            MessageBoxA(NULL, indexBuffer, "Selected Index", MB_OK);
+        } else if (LOWORD(wParam) == 2) {
+            // Handle button click
+            char buffer[256];  // Adjust the buffer size as needed
+            get_in_box_text(g_hEdit, buffer, sizeof(buffer));
+            MessageBoxA(NULL, buffer, "You entered Text", MB_OK);
         }
-        break;
+    }
+    break;
 
     case WM_CLOSE:
         DestroyWindow(hwnd);

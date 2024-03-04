@@ -32,7 +32,7 @@ typedef struct
 	HWND combo_boxes[N_COMBO_BOXES];
 	HWND text_input_boxes[N_INPUT_BOXES];
 	HWND text[N_TEXTS];
-	GUI_event_t GUI_events_list [MAX_EVENTS];
+	GUI_event_t GUI_events_list [4];
 	// -----------------------------------
 	// STYLING variables +++++++++++++++++
 	// for each color change we have to save that change here
@@ -63,6 +63,7 @@ typedef struct
 	// list of events of the selected schedule ++++
 	date_event_t last_downloaded_events[MAX_EVENTS];
     date_event_t events_of_showing_date[MAX_EVENTS];
+	date_event_t events_of_selected_day[MAX_EVENTS];
 	// --------------------------------------------
 
 } GUI_data_t;
@@ -75,6 +76,8 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, date_e
 void hide_GUI_event_elements (GUI_event_t* GUI_event);
 
 void show_GUI_event_elements (GUI_event_t* GUI_event);
+
+void GUI_event_refresh_values (GUI_data_t* GUI_data, GUI_event_t* GUI_event);
 
 // -------------------------------------------------------------------------
 
@@ -95,6 +98,10 @@ HWND create_in_box(HWND hwnd, char* default_text, unsigned X, unsigned Y, unsign
 void GUI_init (GUI_data_t*);
 
 // ---------------------------------------------------
+
+// modifying elements ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void set_in_box_text(HWND in_box, const char* newText);
+//  ----------------------------------------------------------------------------------------------------------------------------------------------------
 
 // hiding elements +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void hide_no_schedule_selected_menu (GUI_data_t* GUI_data);

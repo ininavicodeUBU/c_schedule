@@ -273,9 +273,9 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, date_e
         NULL);
 
 
-    for (int i = 0; i < 30; i++) // will be displaying 30 years from the local date - 1
+    for (int i = 0; i < 30; i++) // will be displaying 30 years from the local time date - 1
     {
-        sprintf(name_of_element, "%d", i + GUI_data->showing_date.year - 1);
+        sprintf(name_of_element, "%d", i + GUI_data->local_time_date.year - 1);
         SendMessage(GUI_event->GUI_elements[2], CB_ADDSTRING, 0, (LPARAM)name_of_element);
     }
         
@@ -323,14 +323,13 @@ void GUI_event_constructor (GUI_data_t* GUI_data, GUI_event_t* GUI_event, date_e
     // ----------------------------------------------------------------------------------------------------------------------------
 
     // input text box ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    /* GUI_event->GUI_elements[5] = create_in_box(GUI_data->GUI_main_screen, GUI_event->date_event.description, X_FIRST_EVENT_BLOCK,
-     Y_FIRST_EVENT_BLOCK + HEIGTH_EVENTS_CBXS * block_id,
-      X_FIRST_EVENT_BLOCK + WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + 20 + WIDTH_HOUR_EVENT_CBX + WIDTH_MIN_EVENT_CBX, 
-      HEIGTH_EVENT_BLOCK - HEIGTH_EVENTS_CBXS); */
+    GUI_event->GUI_elements[5] = create_in_box(GUI_data->GUI_main_screen, GUI_event->date_event.description, X_FIRST_EVENT_BLOCK,
+     Y_FIRST_EVENT_BLOCK + HEIGTH_EVENT_BLOCK * block_id + 25,
+      WIDTH_DAY_EVENT_CBX + WIDTH_MONTH_EVENT_CBX + WIDTH_YEAR_EVENT_CBX + WIDTH_HOUR_EVENT_CBX + WIDTH_MIN_EVENT_CBX, 
+      HEIGTH_INBOX_DESCRIPTION);
     // ----------------------------------------------------------------------------------------------------------------------------
 
-
-    // hide_GUI_event_elements(&GUI_data->GUI_events_list[block_id]);
+    hide_GUI_event_elements(&GUI_data->GUI_events_list[block_id]);
 
 }
 
@@ -344,6 +343,17 @@ void show_GUI_event_elements (GUI_event_t* GUI_event)
 {
     for (int i = 0; i < 6; i++)
         ShowWindow(GUI_event->GUI_elements[i], true);
+}
+
+void GUI_event_refresh_values (GUI_data_t* GUI_data, GUI_event_t* GUI_event)
+{
+    SendMessage(GUI_event->GUI_elements[0], CB_SETCURSEL, GUI_event->date_event.date.day - 1, 0);
+    SendMessage(GUI_event->GUI_elements[1], CB_SETCURSEL, GUI_event->date_event.date.month - 1, 0); 
+    SendMessage(GUI_event->GUI_elements[2], CB_SETCURSEL, GUI_event->date_event.date.year - GUI_data->local_time_date.year + 1, 0); 
+    SendMessage(GUI_event->GUI_elements[3], CB_SETCURSEL, GUI_event->date_event.date.hour, 0); 
+    SendMessage(GUI_event->GUI_elements[4], CB_SETCURSEL, GUI_event->date_event.date.minute, 0); 
+    set_in_box_text(GUI_event->GUI_elements[5], GUI_event->date_event.description);
+    
 }
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -369,6 +379,20 @@ HWND create_in_box(HWND hwnd, char* default_text, unsigned X, unsigned Y, unsign
     return in_box;
 }
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+// modifying elements ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void set_in_box_text(HWND in_box, const char* newText) {
+    // Convert narrow string to wide string
+    int len = MultiByteToWideChar(CP_UTF8, 0, newText, -1, NULL, 0);
+    wchar_t* wideText = malloc(len * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, newText, -1, wideText, len);
+
+    // Set the text of the edit control
+    SendMessageW(in_box, WM_SETTEXT, 0, (LPARAM)wideText);
+
+    free(wideText);
+}
+//  ----------------------------------------------------------------------------------------------------------------------------------------------------
 
 // hiding elements +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void hide_no_schedule_selected_menu (GUI_data_t* GUI_data)
