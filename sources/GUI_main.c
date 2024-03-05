@@ -259,7 +259,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             // no matters the state of [1] menu variable, but in case of [1] = DAY_SELECTED, it's necessary save the
                             // the events from the combo boxes and input boxes too
                             // hide the elements too
-                            // hide the elements for the new event
                             if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == DAY_SELECTED)
                             {
                                 save_elements_data_to_events(&GUI_data);
@@ -269,9 +268,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                                 for (int i = 0; i < MAX_DISPLAYING_EVENTS; i++)
                                     hide_GUI_event_elements(&GUI_data.GUI_events_list[i]);
-
-                                hide_GUI_event_elements(&GUI_data.GUI_event_new);
-                                ShowWindow(GUI_data.buttons[ID_NEW_EVENT], false);
 
                             }
                         }
@@ -286,9 +282,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         // set another the "None schedule selected option on the combo box"
                         SendMessage(GUI_data.combo_boxes[ID_SELECT_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET], CB_SETCURSEL, 0, 0); 
                         
-                        MessageBox(hwnd, "Saving actual schedule", "window", MB_OK);
                         hide_selected_schedule_menu(&GUI_data);
                         show_no_schedule_selected_menu(&GUI_data);
+
+                        hide_GUI_event_elements(&GUI_data.GUI_event_new);
+                        ShowWindow(GUI_data.buttons[ID_NEW_EVENT], false);
+
+                        MessageBox(hwnd, "Saving actual schedule", "window", MB_OK);
+
 
                         // ----------------------------------------------------------------------------------------------------------------------------
 
@@ -300,7 +301,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case ID_NEW_EVENT:
                     if (GUI_data.menu_state[0] == SCHEDULE_SELECTED)
                     {
-                         // append this event to the next available id and increment that id for the next append action
+                        // append this event to the next available id and increment that id for the next append action
                         int id = ++GUI_data.events_max_id;
                                                             
                         int day, month, year, hour, min;
@@ -333,13 +334,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                         // refreshing the GUI ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                         // before any changes, save the data of the elements on the events list
-                        save_elements_data_to_events(&GUI_data);
+                        // this is principaly not fully necessary, we save the data on the blocks
+                        // due if the user has changed something on the boxes, so when the user clicks new event
+                        // we save the changes to re-print all the data as the changes the user made
+                        // ##################### PROBLEM #####################
+                        // if the user has changed the date on a event, when he clicks <new event> the event will "disapear" and 
+                        // appear to the new date he set, so that's an optional behaviour, i will keep it on 
+                        save_elements_data_to_events(&GUI_data); 
 
                         paint_days_to_default_color(&GUI_data);
                         paint_days_with_events(&GUI_data);
-                        paint_selected_day(&GUI_data);
 
-                        refresh_showing_events(&GUI_data);
+                        // branching process
+                        if (GUI_data.menu_state[1] == DAY_SELECTED)
+                        {
+                            refresh_showing_events(&GUI_data);
+                            paint_selected_day(&GUI_data);
+                        }
 
                         // -----------------------------------------------------------------------------------
 
