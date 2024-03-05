@@ -39,6 +39,7 @@ void GUI_init (GUI_data_t* GUI_data)
     // initializing variables
     put_centinela_event(&GUI_data->last_downloaded_events[0]);
     put_centinela_event(&GUI_data->events_of_showing_date[0]);
+    put_centinela_event(&GUI_data->events_of_selected_day[0]);
 
     // menu state
     GUI_data->menu_state[0] = NO_SCHEDULE_SELECTED;
@@ -46,6 +47,8 @@ void GUI_init (GUI_data_t* GUI_data)
 
     // variable initialization
     GUI_data->n_page = 0;
+
+    // this is necessary to initialize the list of events, even if its empty is necessary to indicate some data and the end of the list
 
 
     // ########################################## GENERATING GUI ELEMENTS ##########################################

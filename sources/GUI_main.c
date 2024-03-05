@@ -197,7 +197,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 // buttons ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
                 case ID_NEW_SCHEDULE_BUTTON:
-                // ########## FUNCTIONALITY NO IMPLEMENTED #####################
                     hide_no_schedule_selected_menu(&GUI_data);
 
                     // show the input box
@@ -318,6 +317,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         GUI_data.last_downloaded_events[id].description,
                         sizeof(GUI_data.last_downloaded_events[id].description));
 
+                        printf("\n info -> day: %d", day);
+
                         GUI_data.last_downloaded_events[id].id = id;
                         GUI_data.last_downloaded_events[id].date.day = day;
                         GUI_data.last_downloaded_events[id].date.month = month;
@@ -353,6 +354,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             paint_selected_day(&GUI_data);
                         }
 
+                        
                         // -----------------------------------------------------------------------------------
 
                         // and confirm the action to the user
