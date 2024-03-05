@@ -102,6 +102,21 @@ void delete_event (date_event_t events_list[], int id_to_delete)
         id++;
     }
 }
+
+unsigned count_events (date_event_t events_list[])
+{
+    int i = 0;
+    unsigned events_counter = 0;
+    while (!end_of_event_list(events_list[i]))
+    {
+        if (events_list->id != DELETED_EVENT_OF_THE_LIST)
+            events_counter++;
+        i++;
+    }
+
+    return events_counter;
+}
+
 // ---------------------------------------------------------------------------------------------
 
 // menu user_interaction & displaying functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

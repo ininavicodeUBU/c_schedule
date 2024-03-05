@@ -2,7 +2,7 @@
 
 // LENGTH OF THE ARRAYS THAT CONTAIN THE OBJECTS OF THE GUI ++++++++++++++++++
 
-// 31 days of the month + 4 other buttons
+// 31 days of the month + 4 other buttons + extra
 #define N_BUTTONS 45 
 
 // 4 others + MAX_DISPLAYING_EVENTS * 5 (each events has 5 combo boxes)
@@ -42,6 +42,8 @@ RANGES FOR THE ID'S
 #define ID_FIRST_DAY_OF_MONTH 4
 #define ID_LAST_DAY_OF_MONTH ID_FIRST_DAY_OF_MONTH + 30
 #define ID_NEW_EVENT 40
+#define ID_PAGE_FWD 41
+#define ID_PAGE_BCK 42
 #define ID_FIRST_EVENT_BLOCK 300
 
 // combo boxes
@@ -73,6 +75,9 @@ RANGES FOR THE ID'S
 #define RGB_DAY_SELECTED RGB(131, 255, 122)
 #define RGB_NEW_EVENT RGB(87, 155, 18)
 #define RGB_DELETE_EVENT RGB(236, 72, 72)
+#define RGB_PAGE_FWD RGB(252, 172, 69)
+#define RGB_PAGE_BCK RGB(252, 172, 69)
+
 
 // POSITION AND SIZE
 #define X_NEW_SCHEDULE_BUTTON 10
@@ -105,6 +110,17 @@ RANGES FOR THE ID'S
 
 #define WIDTH_DELETE_EVENT 25
 #define HEIGTH_DELETE_EVENT 50
+
+#define X_PAGE_BCK X_NEW_EVENT
+#define Y_PAGE_BCK Y_NEW_EVENT - HEIGTH_NEW_EVENT
+#define WIDTH_PAGE_BCK 20
+#define HEIGTH_PAGE_BCK 20
+
+#define X_PAGE_FWD X_PAGE_BCK + WIDTH_PAGE_BCK + 10
+#define Y_PAGE_FWD Y_PAGE_BCK
+#define WIDTH_PAGE_FWD 20
+#define HEIGTH_PAGE_FWD 20
+
 // day events ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define HEIGTH_EVENT_BLOCK 100
 #define X_FIRST_EVENT_BLOCK 300

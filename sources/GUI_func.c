@@ -44,6 +44,9 @@ void GUI_init (GUI_data_t* GUI_data)
     GUI_data->menu_state[0] = NO_SCHEDULE_SELECTED;
     GUI_data->menu_state[1] = UNDEFINED_MENU_STATE;
 
+    // variable initialization
+    GUI_data->n_page = 0;
+
 
     // ########################################## GENERATING GUI ELEMENTS ##########################################
     // main screen ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -136,8 +139,30 @@ void GUI_init (GUI_data_t* GUI_data)
         NULL);
     SetButtonBackgroundColor(GUI_data->buttons[ID_NEW_EVENT], RGB_NEW_EVENT);
 
-   
+    GUI_data->buttons[ID_PAGE_BCK] = CreateWindow(
+        "BUTTON",
+        "<-",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+        X_PAGE_BCK, Y_PAGE_BCK, WIDTH_PAGE_BCK, HEIGTH_PAGE_BCK,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_PAGE_BCK, // Button ID
+        (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
+        NULL);
+    SetButtonBackgroundColor(GUI_data->buttons[ID_PAGE_BCK], RGB_PAGE_BCK);
+    GUI_data->colors_of_buttons[ID_PAGE_BCK] = RGB_PAGE_BCK;
     
+    GUI_data->buttons[ID_PAGE_FWD] = CreateWindow(
+        "BUTTON",
+        "->",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+        X_PAGE_FWD, Y_PAGE_FWD, WIDTH_PAGE_FWD, HEIGTH_PAGE_FWD,
+        GUI_data->GUI_main_screen,
+        (HMENU)ID_PAGE_FWD, // Button ID
+        (HINSTANCE)GetWindowLong(GUI_data->GUI_main_screen, GWL_HINSTANCE),
+        NULL);
+    SetButtonBackgroundColor(GUI_data->buttons[ID_PAGE_FWD], RGB_PAGE_FWD);
+    GUI_data->colors_of_buttons[ID_PAGE_FWD] = RGB_PAGE_FWD;
+
     // generating combo boxes ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GUI_data->combo_boxes[ID_DELETE_SCHEDULE_CBX + ID_COMBO_BOX_OFFSET] = CreateWindow(
         "COMBOBOX",
@@ -218,6 +243,9 @@ void GUI_init (GUI_data_t* GUI_data)
         ShowWindow(GUI_data->buttons[i], false);
 
     ShowWindow(GUI_data->text_input_boxes[ID_NEW_SCHEDULE_NAME_INBOX + INDEX_INBOX_OFFSET], false);
+
+    ShowWindow(GUI_data->buttons[ID_PAGE_BCK], false);
+    ShowWindow(GUI_data->buttons[ID_PAGE_FWD], false);
     
     // -------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -640,19 +668,34 @@ void refresh_showing_events (GUI_data_t* GUI_data)
     get_events_by(GUI_data->last_downloaded_events, GUI_data->showing_date.year, GUI_data->showing_date.month, GUI_data->showing_date.day, 
     GUI_data->events_of_selected_day);
 
+    // events are displayed from i
+    // if we make the error of accessing to none existing index, the program will crash
+    // so since we know the starting index that we want to display, we have to go througth
+    // all the previous index to know if there is the end_of_events_list
+    int start_index = MAX_DISPLAYING_EVENTS * GUI_data->n_page;
     int i = 0;
 
-    while (!end_of_event_list(GUI_data->events_of_selected_day[i]))
+    while (!end_of_event_list(GUI_data->events_of_selected_day[i]) && i < (start_index + 3))
     {
-        GUI_data->GUI_events_list[i].date_event = GUI_data->events_of_selected_day[i];
-        GUI_event_refresh_values(GUI_data, &GUI_data->GUI_events_list[i]);
-        show_GUI_event_elements(&GUI_data->GUI_events_list[i]);
+        if (i >= start_index)
+        {
+            GUI_data->GUI_events_list[i - start_index].date_event = GUI_data->events_of_selected_day[i];
+            GUI_event_refresh_values(GUI_data, &GUI_data->GUI_events_list[i - start_index]);
+            show_GUI_event_elements(&GUI_data->GUI_events_list[i - start_index]);
+
+        }
+
         i++;
     }
 
-    while (i < MAX_DISPLAYING_EVENTS)
+    while (i < (start_index + 3))
     {
-        hide_GUI_event_elements(&GUI_data->GUI_events_list[i]);
+        if (i >= start_index)
+        {
+            hide_GUI_event_elements(&GUI_data->GUI_events_list[i - start_index]);
+
+        }
+
         i++;
     }
 }
@@ -704,28 +747,38 @@ void get_in_box_text(HWND in_box, char* buffer, int bufferSize) {
 // data saving ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void save_elements_data_to_events (GUI_data_t* GUI_data)
 {
+    // events are displayed from i
+    // if we make the error of accessing to none existing index, the program will crash
+    // so since we know the starting index that we want to display, we have to go througth
+    // all the previous index to know if there is the end_of_events_list
+    int start_index = MAX_DISPLAYING_EVENTS * GUI_data->n_page;
     int i = 0;
-    while (!end_of_event_list(GUI_data->events_of_selected_day[i]))
+    while (!end_of_event_list(GUI_data->events_of_selected_day[i]) && i < (start_index + 3))
     {
-        int id = GUI_data->events_of_selected_day[i].id;
-        int day, month, year, hour, min;
-        printf("\nSaving id: %d", id);
+        if (i >= start_index)
+        {
 
-        // Get the selected index from the combo box
-        day = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[0], CB_GETCURSEL, 0, 0) + 1;
-        month = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[1], CB_GETCURSEL, 0, 0) + 1;
-        year = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[2], CB_GETCURSEL, 0, 0) + GUI_data->local_time_date.year - 1;
-        hour = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[3], CB_GETCURSEL, 0, 0);
-        min = SendMessage(GUI_data->GUI_events_list[i].GUI_elements[4], CB_GETCURSEL, 0, 0);
-        get_in_box_text(GUI_data->GUI_events_list[i].GUI_elements[5],
-        GUI_data->last_downloaded_events[GUI_data->GUI_events_list[i].date_event.id].description,
-        sizeof(GUI_data->last_downloaded_events[GUI_data->GUI_events_list[i].date_event.id].description));
+            int id = GUI_data->events_of_selected_day[i].id;
+            int day, month, year, hour, min;
 
-        GUI_data->last_downloaded_events[id].date.day = day;
-        GUI_data->last_downloaded_events[id].date.month = month;
-        GUI_data->last_downloaded_events[id].date.year = year;
-        GUI_data->last_downloaded_events[id].date.hour = hour;
-        GUI_data->last_downloaded_events[id].date.minute = min;
+            // Get the selected index from the combo box
+            day = SendMessage(GUI_data->GUI_events_list[i - start_index].GUI_elements[0], CB_GETCURSEL, 0, 0) + 1;
+            month = SendMessage(GUI_data->GUI_events_list[i - start_index].GUI_elements[1], CB_GETCURSEL, 0, 0) + 1;
+            year = SendMessage(GUI_data->GUI_events_list[i - start_index].GUI_elements[2], CB_GETCURSEL, 0, 0) + GUI_data->local_time_date.year - 1;
+            hour = SendMessage(GUI_data->GUI_events_list[i - start_index].GUI_elements[3], CB_GETCURSEL, 0, 0);
+            min = SendMessage(GUI_data->GUI_events_list[i - start_index].GUI_elements[4], CB_GETCURSEL, 0, 0);
+            get_in_box_text(GUI_data->GUI_events_list[i - start_index].GUI_elements[5],
+            GUI_data->last_downloaded_events[GUI_data->GUI_events_list[i - start_index].date_event.id].description,
+            sizeof(GUI_data->last_downloaded_events[GUI_data->GUI_events_list[i - start_index].date_event.id].description));
+
+            GUI_data->last_downloaded_events[id].date.day = day;
+            GUI_data->last_downloaded_events[id].date.month = month;
+            GUI_data->last_downloaded_events[id].date.year = year;
+            GUI_data->last_downloaded_events[id].date.hour = hour;
+            GUI_data->last_downloaded_events[id].date.minute = min;
+            
+        }
+
         i++;
     }
 }

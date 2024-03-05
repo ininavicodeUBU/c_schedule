@@ -154,6 +154,11 @@ void put_centinela_event (date_event_t *event);
 
 void delete_event (date_event_t events_list[], int id_to_delete);
 
+/**
+ * @returns The number of events that are in the list, skipping deleted events
+*/
+unsigned count_events (date_event_t events_list[]);
+
 // ---------------------------------------------------------------------------------------------
 
 // specific functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

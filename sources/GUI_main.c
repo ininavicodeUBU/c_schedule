@@ -86,7 +86,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             // inform to the user which schedule is selected
                             char str [MAX_PATH_LEN];
                             sprintf(str, "%s", GUI_data.names_of_available_schedules[selectedIndex - 1]);
-                            printf("\nname opening %s ", str);
                             // MessageBox(hwnd, str, "Schedule selected", MB_OK);                        
         
                         }
@@ -115,7 +114,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             sprintf(full_path_to_delete, "%s%s", GUI_data.schedules_folder_path,
                             GUI_data.names_of_available_schedules[selectedIndex - 1]);
 
-                            printf("\nindex: %d, name of the schedule selected: %s", selectedIndex, GUI_data.names_of_available_schedules[selectedIndex - 1]);
                             delete_file(full_path_to_delete);
 
                             ls(GUI_data.schedules_folder_path, GUI_data.names_of_available_schedules, ".txt");
@@ -254,11 +252,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if (GUI_data.menu_state[0] == SCHEDULE_SELECTED)
                     {
 
+                        // no matters the state of [1] menu variable, but in case of [1] = DAY_SELECTED, it's necessary save the
+                        // the events from the combo boxes and input boxes too
+                        // hide the elements too
                         if (GUI_data.menu_state[1] == DAY_SELECTED)
                         {
-                            // no matters the state of [1] menu variable, but in case of [1] = DAY_SELECTED, it's necessary save the
-                            // the events from the combo boxes and input boxes too
-                            // hide the elements too
                             if (GUI_data.menu_state[0] == SCHEDULE_SELECTED && GUI_data.menu_state[1] == DAY_SELECTED)
                             {
                                 save_elements_data_to_events(&GUI_data);
@@ -285,6 +283,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         hide_selected_schedule_menu(&GUI_data);
                         show_no_schedule_selected_menu(&GUI_data);
 
+                        // hide the elements to control the page
+                        ShowWindow(GUI_data.buttons[ID_PAGE_BCK], false);
+                        ShowWindow(GUI_data.buttons[ID_PAGE_FWD], false);
+
                         hide_GUI_event_elements(&GUI_data.GUI_event_new);
                         ShowWindow(GUI_data.buttons[ID_NEW_EVENT], false);
 
@@ -305,7 +307,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         int id = ++GUI_data.events_max_id;
                                                             
                         int day, month, year, hour, min;
-                        printf("\nSaving id: %d", id);
 
                         // Get the selected index from the combo box
                         day = SendMessage(GUI_data.GUI_event_new.GUI_elements[0], CB_GETCURSEL, 0, 0) + 1;
@@ -359,7 +360,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
 
                     break;
-                
+
+                // page changing ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                case ID_PAGE_BCK:
+                    if (GUI_data.n_page > 0)
+                    {
+                        GUI_data.n_page--;
+                        save_elements_data_to_events(&GUI_data);
+                        refresh_showing_events(&GUI_data);
+                        
+                    }
+
+                    break;
+
+                case ID_PAGE_FWD:   
+                    if (GUI_data.n_page < (count_events(GUI_data.events_of_selected_day) / MAX_DISPLAYING_EVENTS))
+                    {
+                        GUI_data.n_page++;
+                        save_elements_data_to_events(&GUI_data);
+                        refresh_showing_events(&GUI_data);
+                    }
+
+                    break;
+
                 // delete event button ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                 // in the range of the event blocks
                 case 300 ... (ID_FIRST_EVENT_BLOCK + ELEMENTS_BY_EVENT_BLOCK * MAX_DISPLAYING_EVENTS):
@@ -372,7 +395,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             int block_id = (wParam - ID_FIRST_EVENT_BLOCK) / ELEMENTS_BY_EVENT_BLOCK;
 
                             // delete the event 
-                            delete_event(GUI_data.last_downloaded_events, GUI_data.GUI_events_list[0].date_event.id);
+                            delete_event(GUI_data.last_downloaded_events, GUI_data.GUI_events_list[block_id].date_event.id);
 
                             // refresh the showing events
                             save_elements_data_to_events(&GUI_data);
@@ -385,8 +408,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             refresh_showing_events(&GUI_data);
 
                         }
-
-                        
                         
                     }
 
@@ -407,6 +428,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             GUI_data.showing_date.day = wParam - ID_FIRST_DAY_OF_MONTH + 1;
 
                             paint_selected_day(&GUI_data);
+
+                            // show the elements to control the page and set the first page
+                            ShowWindow(GUI_data.buttons[ID_PAGE_BCK], true);
+                            ShowWindow(GUI_data.buttons[ID_PAGE_FWD], true);
+                            GUI_data.n_page = 0;
 
                             refresh_showing_events(&GUI_data);
                         }
@@ -433,6 +459,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             paint_days_to_default_color(&GUI_data);
                             paint_days_with_events(&GUI_data);
                             paint_selected_day(&GUI_data);
+
+                            // reset the page for the next day, we dont know if the actual page
+                            // will display any event on the next day and it can be confusing for the user
+                            GUI_data.n_page = 0;
 
                             refresh_showing_events(&GUI_data);
                         }
@@ -489,6 +519,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
                     DrawCustomButton(lpdis, RGB_DELETE_EVENT, "X");
                 }
+            } else if (wParam == ID_PAGE_BCK)
+            {
+                LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+                DrawCustomButton(lpdis, RGB_PAGE_BCK, "<-");
+            } else if (wParam == ID_PAGE_FWD)
+            {
+                LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+                DrawCustomButton(lpdis, RGB_PAGE_FWD, "->");
             }
             
             break;

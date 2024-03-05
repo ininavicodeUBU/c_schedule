@@ -2,7 +2,7 @@
 Compilation arguments for GUI functions:
     -lgdi32
 
-# #V0_0
+# #V0-0
 
 ## Flow of the GUI:
 
@@ -318,11 +318,83 @@ typedef struct
 
 <hr style="border-color: rgb(50, 150, 250);">
 
-# #V1_0 
+# #V1-0 
 
 ## Adding new events
 For the moment we will display 3 event block, and the last block that can fit will be reserved for the new event creation
 
+#### Getting the id of the new event
+When we get the events from the file, we have an output parameter from the function that does it.
+
+```C
+// from func.h
+void file_to_event_list (char filename[], date_event_t event_list[], int *n_events);
+```
+
+So `int *n_events` indicates at the same time the max id of the list:
+`max_id = n_events - 1` , because the id starts from 0.
+
+So if we add a new variable on the `GUI_data` to save that `max_id` each time we load the events from the file, it's so easy to get it.
+
+```C
+// updated GUI_data_t
+typedef struct
+{
+	// ...
+	int events_max_id;
+}
+```
+
+
 ![[GUI_preview events|1000]]
 
 ## Deleting events
+As the structure of the data is made, we just have to reutilize the function:
+
+```C
+// from func.h
+delete_event(date_event_t* events_list, int id_to_delete);
+```
+
+And refresh the visualization.
+#### How do we get the id ?
+We have 3 blocks with events, each one has a delete button, so our work is to get the `block_id` to access to it and get the id of the event that is representating that block we want to delete.
+
+
+# #V1-1
+
+## Implementing pages to visualize more than  3 events at the same time
+
+With the structure we created, we are able to get all the events of the selected day, but we can't fit more than 3 at the screen *(we could but we don't want to)*
+
+So we can simulate *pages* and display the events making groups of 3, so at the first page we were showing the 3 -> *\[0 - 2]*  first events, at the second we will show *\[3 - 5]* ...
+So for each page we increment by 3 the offset of the displaying events.
+
+>[!WARNING] WARNING
+>It's necessary to access to the events by the 
+>`id + n_page * MAX_DISPLAYING_EVENTS` because we are selecting an event of the list, but when we select the *event_block* where we want to access we don't have to take care of the n_page, we just have to tell the functions the get another event, but the blocks are the same 3.
+>
+>Remember that we are simulating the pages, we display other events on the same elements.
+
+>[!info] REMEMBER
+>When the user increments or decrements the page, we have to control the boundaries of the pages, so pages range is \[0 - ...]
+
+To set a top limit for the pages, we can try to count how much events are in the selected day.
+To avoid adding more code in the functions *(that are made for an specific operation)* we can create another one in `func.h` where are the functions that handles the data.
+
+```C
+// function to count the events on a list
+count_events(date_event_t events_list[]);
+```
+
+And then to calculate how many pages are available we can do
+```C
+pages = count_events(GUI_data.events_of_selected_day) / MAX_DISPLAYING_EVENTS;
+```
+ 
+
+
+
+
+
+

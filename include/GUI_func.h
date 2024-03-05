@@ -20,7 +20,6 @@ typedef struct
 	date_event_t date_event;
 	HWND GUI_elements [7]; // day, month, year, hour, minut, description, delete button
 	unsigned block_id;
-	unsigned n_page;
 
 } GUI_event_t;
 
@@ -66,6 +65,7 @@ typedef struct
     date_event_t events_of_showing_date[MAX_EVENTS];
 	date_event_t events_of_selected_day[MAX_EVENTS];
 	int events_max_id;
+	unsigned n_page;
 	// --------------------------------------------
 
 } GUI_data_t;
