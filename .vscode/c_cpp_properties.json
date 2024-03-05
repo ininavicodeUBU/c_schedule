@@ -4,8 +4,6 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "c_schedule/**",
-                "c_schedule/libraries/**"
                 
             ],
             "defines": [

@@ -1,0 +1,82 @@
+### data structures ###
+struct GUI_t 
+{
+    main_menu_index: short unsigned 
+    option: short unsigned [] 
+    showing_date: date_t
+}
+########################
+
+### global variables ###
+buttons_of_the_days: button_t []
+labels_of_menus: HWND [][] ### one row for each menu
+buttons_of_menus: HWND [][] ### one row for each menu
+buttons_of_schedules HWND [MAX_SCHEDULES]
+GUI: GUI_t
+########################
+
+### global constants ###
+MENU_SELECT_SCHEDULE = 0
+    Options [0]:
+    -> DELETE_SCHEDULE = 0
+    -> NEW_SCHEDULE = 1
+    -> SELECT_SCHEDULE = [0, ..., n_schedules] + 2
+
+MENU_ON_SCHEDULE = 1
+    Options: 
+        -> YEAR = [2023, ..., USHRT_MAX] ### USHRT_MAX form <limits.h> ###
+        -> MONTH = [1, 12]
+        -> DAY = [1, ..., respective_end_day_of_the_month_showed]
+            ### Enter to a sub menu ### 
+            Options [0]:
+                -> RETURN_TO_MENU_ON_SCHEDULE = 1
+
+main ()
+{
+    window = CreateWindow()
+
+    create_buttons_menus(buttons_of_menus)
+    create_buttons_days(buttons_of_the_days)
+    create_labels_menus(labels_of_menus)
+    create_buttons_schedules(buttons_of_schedules)
+
+    initialize_GUI(GUI) ### set the main_menu_index to the SELECT_SCHEDULE_MENU, options[n] = {0, 0, ...}, showing_date = <local_time>
+
+
+    while (not end_window)
+    {
+        send_callback_of_events()
+        refresh_window()
+    }
+
+}
+
+### Functions ####
+void callback_of_buttons ()
+{
+    switch (button_id_pressed)
+    {
+            
+        case DELETE_SCHEDULE:
+            ...
+            break;
+        
+        case NEW_SCHEDULE:
+            ...
+            break;
+        
+        default:
+            if (button_id_selected_schedule < 100)
+            {
+                ### schedule selected ###
+                
+            }
+
+            else if (button_id_selected_schedule >= 100)
+            {
+                ### day pressed ###
+                
+            }
+            
+    }
+}

@@ -1,2 +1,0 @@
-Compilation arguments for GUI functions:
-    -lgdi32

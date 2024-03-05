@@ -1,4 +1,32 @@
 #include <windows.h>
+#include "../include/constants.h"
+#include <stdbool.h>
+#include <limits.h>
+
+
+/**
+ * NOTES OF THE TEST
+ * ShowWindow(<button_pointer>, SW_HIDE); -> This enables&ocults the referenced button
+ * ShowWindow(<button_pointer>, SW_SHOWNORMAL); -> This disables&shows the refernced button
+*/
+
+// global variables ++++++++++++++++++++++++++++++++++++++++
+// list of the buttons
+HWND buttons_of_menu_select_schedule [MAX_SCHEDULES + 2]; // max buttons are max_schedules + the two options, new & delete
+bool button_delete_visible = true;
+// ---------------------------------------------------------
+
+// aux functions ++++++++++++++++++++++++++++++++++++++++++++
+// Function to change the background color of a button
+void SetButtonBackgroundColor(HWND hwndButton, COLORREF color)
+{
+    SendMessage(hwndButton, BM_SETSTYLE, BS_OWNERDRAW, TRUE);
+
+    DeleteObject((HBRUSH)GetClassLongPtr(hwndButton, GCLP_HBRBACKGROUND));
+
+    SetClassLongPtr(hwndButton, GCLP_HBRBACKGROUND, (LONG_PTR)CreateSolidBrush(color));
+}
+// -----------------------------------------------------------
 
 // Step 4: the Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -10,10 +38,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             {
                 case 0: // Button ID for "New Schedule"
                     MessageBox(hwnd, "New Schedule button_new_sch clicked!", "Button Clicked", MB_OK); // window type (HWND), Message, Window message Title
+                    // this button will ocult the Delete schedule button
+                    
+                    button_delete_visible ^= 1;
+                    
+                    if (!button_delete_visible)
+                        ShowWindow(buttons_of_menu_select_schedule[1], SW_HIDE);
+                    else
+                        ShowWindow(buttons_of_menu_select_schedule[1], SW_SHOWNORMAL);
+
                     break;
 
                 case 1: // Delete schedule button
                     MessageBox(hwnd, "Delete button clicked", "Button Clicked", MB_OK);
+                        SetButtonBackgroundColor(buttons_of_menu_select_schedule[0], RGB(0, 0, 255));
+
                     break;
             }
             break;
@@ -28,6 +67,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
+
 
 // Step 5: the entry point
 int main()
@@ -48,6 +88,9 @@ int main()
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
         NULL, NULL, GetModuleHandle(NULL), NULL);
+
+
+    // Creating the buttons
 
     // Step 3.1: Create the <new schedule> button_new_sch
     HWND button_new_sch = CreateWindow(
@@ -71,6 +114,8 @@ int main()
         (HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
         NULL);
 
+
+
     // Step 3.1b: Set Font for the button_new_sch (optional)
     HFONT hFont_new_sch = CreateFont(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
         CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
@@ -81,12 +126,18 @@ int main()
         CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
     SendMessage(button_delete_sch, WM_SETFONT, (WPARAM)hFont_delete_sch, MAKELPARAM(TRUE, 0));
 
-    // Step 3.1c: Display the Button
-    ShowWindow(button_new_sch, SW_SHOWNORMAL);
-    UpdateWindow(button_new_sch);
+    // So now add all this buttons to the list of buttons of the select schedule menu
+    buttons_of_menu_select_schedule[0] = button_new_sch;
+    buttons_of_menu_select_schedule[1] = button_delete_sch;
 
-    ShowWindow(button_delete_sch, SW_SHOWNORMAL);
-    UpdateWindow(button_delete_sch);
+
+    // Step 3.1c: Display the Button
+    // loop to display all the buttons
+    for (int button_id = 0; button_id < 2; button_id++)
+    {
+        ShowWindow(buttons_of_menu_select_schedule[button_id], SW_SHOWNORMAL);
+        UpdateWindow(buttons_of_menu_select_schedule[button_id]);
+    }
 
     // Step 3d: Display the Window
     ShowWindow(hwnd, SW_SHOWDEFAULT);

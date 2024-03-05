@@ -10,11 +10,28 @@
 // inlcudes
 #include "../include/func.h"
 
+// struct date_t data management functions +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void get_local_time(date_t* date)
+{
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+
+    // Format the result string as DD/MM/YYYY HH:mm:ss
+    // sprintf(result, "%02d/%02d/%04d %02d:%02d:%02d", st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute, st.wSecond);
+    date->day = st.wDay;
+    date->month = st.wMonth;
+    date->year = st.wYear;
+    date->minute = st.wMinute;
+    date->hour = st.wHour;
+}
+// -------------------------------------------------------------------------------------------------------------------
+
 
 // data management functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void get_events_by (date_event_t events_list[], int year, int month, int day, date_event_t out_events[])
 {
+    
     bool contition_to_save = true;
     int events_count = 0; // if the final count is 0, tell there are no events for this conditions
     int i = 0;
@@ -84,6 +101,20 @@ void delete_event (date_event_t events_list[], int id_to_delete)
         } 
         id++;
     }
+}
+
+unsigned count_events (date_event_t events_list[])
+{
+    int i = 0;
+    unsigned events_counter = 0;
+    while (!end_of_event_list(events_list[i]))
+    {
+        if (events_list->id != DELETED_EVENT_OF_THE_LIST)
+            events_counter++;
+        i++;
+    }
+
+    return events_counter;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -203,7 +234,7 @@ void get_events_filtered_by_user (date_event_t events_list[], date_event_t out_f
 
 // ---------------------------------------------------------------------------------------------
 
-// specific functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// specific menu functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void operate_schedule_menu_option (int menu_option, const char schedules_path[], char available_schedules[][MAX_FILENAME_LEN],
 date_event_t events_list[], int* events_len, char new_sch_path[])
@@ -216,7 +247,7 @@ date_event_t events_list[], int* events_len, char new_sch_path[])
         printf("\nWrite the name of the schedule: ");
         fgets(new_schedule_name, MAX_FILENAME_LEN, stdin);
         trim_trailing_whitespace(new_schedule_name);
-        // sprintf(new_schedule_path, "%s%s", schedules_path, new_schedule_name); strcat(new_schedule_path, ".txt");
+        sprintf(new_schedule_path, "%s%s", schedules_path, new_schedule_name); strcat(new_schedule_path, ".txt");
         new_file(new_schedule_path);
         file_to_event_list(new_schedule_path, events_list, events_len);
 
@@ -331,20 +362,49 @@ void file_to_event_list (char filename[], date_event_t event_list[], int *n_even
     }
     else
     {
-        // fill the events list with the file data
+        int i;
+        bool in_quotes;
         while (!feof(f_sch) && (n_event < MAX_EVENTS))
         {
+            in_quotes = false;
+            i = 0;
+
             event_list[n_event].id = (unsigned)n_event;
-            fscanf(f_sch, "%d %d %d %d %d \"%255[^\"]\"",
+            fscanf(f_sch, "%d %d %d %d %d",
                         &event_list[n_event].date.day,
                         &event_list[n_event].date.month,
                         &event_list[n_event].date.year,
                         &event_list[n_event].date.hour,
-                        &event_list[n_event].date.minute,
-                        event_list[n_event].description);
+                        &event_list[n_event].date.minute);
+
+
+            
+            char f_char;
+            fscanf(f_sch, "%c", &f_char);
+            in_quotes = (f_char == '"');
+            while (!in_quotes && !feof(f_sch))
+            {   
+                fscanf(f_sch, "%c", &f_char);
+                in_quotes = (f_char == '"');
+            }
+
+            while (in_quotes && !feof(f_sch))
+            {
+                fscanf(f_sch, "%c", &f_char);
+
+                in_quotes = (f_char != '"');
+                if (in_quotes)
+                {
+                    event_list[n_event].description[i] = f_char;
+                    i++;
+
+                }
+                
+            }
 
             n_event++;
         }
+        
 
         fclose(f_sch);
 
